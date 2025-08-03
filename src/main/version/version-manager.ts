@@ -174,8 +174,8 @@ export class VersionManager {
    */
   private async fetchUpdateManifest(): Promise<UpdateManifest> {
     // Buscar manifest real do servidor de atualizações
-    // URL do repositório GitHub para verificação de atualizações
-    const updateServerUrl = 'https://api.github.com/repos/PauloHYBEX/krigzis/releases/latest';
+            // Repositório GitHub oficial do Krigzis
+        const updateServerUrl = 'https://api.github.com/repos/PauloHYBEX/krigzis/releases/latest';
     
     try {
       // Em ambiente de desenvolvimento, não verificar atualizações

@@ -4,112 +4,97 @@
 
 ![Krigzis Logo](assets/icon_256x256.svg)
 
-**Gerenciador de tarefas moderno com Timer Pomodoro, Sistema de Notas e Assistente IA**
+**Sistema completo de produtividade com timer Pomodoro, notas vinculadas, relatórios e IA integrada**
 
-[![Versão](https://img.shields.io/badge/versão-1.0.0-blue.svg)](https://github.com/PauloHYBEX/krigzis/releases)
-[![Licença](https://img.shields.io/badge/licença-MIT-green.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/plataforma-Windows-blue.svg)](#)
-[![Electron](https://img.shields.io/badge/Electron-26.6.10-9feaf9.svg)](https://www.electronjs.org/)
-[![React](https://img.shields.io/badge/React-18+-61dafb.svg)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5+-blue.svg)](https://www.typescriptlang.org/)
-
-[📥 Download](#-download) • [✨ Funcionalidades](#-funcionalidades) • [🚀 Instalação](#-instalação) • [📖 Documentação](#-documentação) • [🤝 Contribuição](#-contribuição)
+[![Versão](https://img.shields.io/github/v/release/PauloHYBEX/krigzis?color=00D4AA&style=for-the-badge)](https://github.com/PauloHYBEX/krigzis/releases)
+[![Downloads](https://img.shields.io/github/downloads/PauloHYBEX/krigzis/total?color=7B3FF2&style=for-the-badge)](https://github.com/PauloHYBEX/krigzis/releases)
+[![Licença](https://img.shields.io/github/license/PauloHYBEX/krigzis?color=00D4AA&style=for-the-badge)](LICENSE)
 
 </div>
 
----
+## ✨ Características Principais
 
-## 📋 Sobre o Projeto
+- 📋 **Gerenciamento Avançado de Tarefas** - Sistema de categorias, prioridades e status
+- ⏱️ **Timer Pomodoro Integrado** - Técnica de produtividade com controles personalizáveis
+- 📝 **Notas Vinculadas** - Sistema de notas conectadas às tarefas
+- 📊 **Relatórios e Estatísticas** - Acompanhe seu progresso e produtividade
+- 🤖 **Assistente IA Configurável** - Integração com assistentes de IA (opcional)
+- 🎨 **Interface Dark Mode** - Design moderno e profissional
+- 🔄 **Sistema de Atualizações** - Verificação automática via GitHub Releases
+- 💾 **Backup e Sincronização** - Dados seguros e acessíveis
+- 🚀 **Versão Portável** - Não requer instalação ou privilégios administrativos
 
-O **Krigzis** é um gerenciador de tarefas avançado desenvolvido com tecnologias modernas, oferecendo uma experiência completa para organização pessoal e produtividade. Combina gestão de tarefas, timer Pomodoro, sistema de notas e assistente IA em uma interface elegante e intuitiva.
+## 🖥️ Interface
 
-### 🎯 Principais Diferenciais
+O Krigzis oferece uma interface intuitiva e moderna, com:
+- Dashboard centralizado para visão geral
+- Sistema de abas para organização
+- Modais para criação/edição de tarefas e notas
+- Configurações avançadas e personalizáveis
+- Relatórios visuais com gráficos
 
-- **🎨 Interface Moderna**: Design dark com gradientes personalizados
-- **⚡ Performance Otimizada**: Construído com Electron e React
-- **🔒 Dados Locais**: Banco de dados local para máxima privacidade
-- **🤖 IA Integrada**: Assistente inteligente configurável
-- **📱 Responsivo**: Interface adaptável para diferentes resoluções
-- **🔄 Auto-atualização**: Sistema automático de verificação de atualizações
+## 📥 Download e Instalação
 
----
+### Windows (Recomendado)
 
-## ✨ Funcionalidades
+1. **Baixe a versão mais recente**: [Krigzis v1.0.0](https://github.com/PauloHYBEX/krigzis/releases/latest)
+2. **Extraia o arquivo ZIP** em qualquer pasta
+3. **Execute `start.bat`** - o script instalará automaticamente as dependências
+4. **Aguarde a inicialização** - a aplicação abrirá automaticamente
 
-### 📝 **Gerenciamento de Tarefas**
-- ✅ Criação e edição avançada de tarefas
-- 🏷️ Sistema de categorias personalizáveis
-- 🎯 Níveis de prioridade (Baixa, Média, Alta, Crítica)
-- 📊 Status de progresso (Backlog, Esta Semana, Hoje, Concluído)
-- 🔗 Vinculação com notas
-- 📈 Estatísticas e métricas detalhadas
+### Requisitos do Sistema
 
-### ⏰ **Timer Pomodoro**
-- ⏱️ Timer personalizável (trabalho, pausa curta, pausa longa)
-- 🔔 Notificações automáticas
-- 📊 Histórico de sessões
-- 🎯 Integração com tarefas
-- ⚙️ Configurações avançadas
+- **Windows 10 ou superior**
+- **4GB RAM** (mínimo)
+- **100MB espaço em disco**
+- **Node.js 16+** (instalado automaticamente se necessário)
 
-### 📓 **Sistema de Notas**
-- 📝 Editor rico de texto
-- 🏷️ Sistema de tags
-- 🎨 Cores personalizáveis
-- 🔗 Vinculação com tarefas
-- 🔍 Busca avançada
+## 🚀 Funcionalidades Detalhadas
 
-### 🤖 **Assistente IA**
-- 💬 Chat inteligente
-- ⚙️ Configuração de modelos (OpenAI, Anthropic, local)
-- 🔧 Ajuda contextual
-- 📋 Sugestões de produtividade
+### 📋 Sistema de Tarefas
+- Criação e edição de tarefas com títulos e descrições
+- Sistema de categorias personalizáveis
+- Definição de prioridades (baixa, média, alta, crítica)
+- Status de acompanhamento (pendente, em progresso, concluído)
+- Data de vencimento e lembretes
+- Vinculação com notas relacionadas
 
-### 📊 **Relatórios e Análises**
-- 📈 Gráficos de produtividade
-- 📊 Estatísticas de tempo
-- 🎯 Métricas de conclusão
-- 📅 Relatórios periódicos
+### ⏱️ Timer Pomodoro
+- Sessões de trabalho cronometradas
+- Pausas curtas e longas configuráveis
+- Histórico de sessões
+- Integração com tarefas ativas
+- Notificações sonoras e visuais
 
-### ⚙️ **Configurações Avançadas**
-- 🌙 Tema escuro forçado
-- 🔔 Configurações de notificações
-- 💾 Backup e restauração
-- 🔄 Sincronização de dados
-- 🌐 Configurações de idioma
+### 📝 Sistema de Notas
+- Criação de notas ricas em texto
+- Sistema de tags para organização
+- Vinculação direta com tarefas
+- Cores personalizáveis para categorização
+- Busca e filtros avançados
 
----
+### 📊 Relatórios
+- Estatísticas de produtividade
+- Gráficos de progresso
+- Análise de tempo gasto por categoria
+- Relatórios de metas atingidas
+- Exportação de dados
 
-## 📥 Download
+### 🤖 Assistente IA
+- Integração opcional com serviços de IA
+- Sugestões inteligentes para organização
+- Análise de padrões de produtividade
+- Configuração flexível de APIs
 
-### 📦 **Versão Portável (Recomendada)**
+## 🛠️ Desenvolvimento
 
-**[⬇️ Krigzis v1.0.0 - Windows Portable](https://github.com/PauloHYBEX/krigzis/releases/latest)**
+### Pré-requisitos
 
-- ✅ **Sem instalação necessária**
-- ✅ **Não requer privilégios de administrador**
-- ✅ **Auto-instala dependências**
-- ✅ **Todas as funcionalidades incluídas**
+- Node.js 16+
+- npm ou yarn
+- Git
 
-### 📋 **Requisitos do Sistema**
-
-- **SO:** Windows 10 ou superior (x64)
-- **RAM:** 4GB mínimo (8GB recomendado)
-- **Espaço:** 200MB para aplicação + dados
-- **Internet:** Para atualizações e IA (opcional)
-
----
-
-## 🚀 Instalação
-
-### 🎯 **Método Rápido**
-
-1. **📥 Baixe** o arquivo `Krigzis-v1.0.0-Windows-Portable.zip`
-2. **📂 Extraia** para qualquer pasta de sua escolha
-3. **▶️ Execute** `start.bat`
-4. **⏳ Aguarde** a instalação automática das dependências
-5. **🎉 Pronto!** A aplicação será iniciada automaticamente
-
-### 🔧 **Método Manual** (Para desenvolvedores)
+### Instalação para Desenvolvimento
 
 ```bash
 # Clone o repositório
@@ -122,143 +107,80 @@ npm install
 # Execute em modo desenvolvimento
 npm run dev
 
-# Ou compile para produção
+# Build para produção
 npm run build
-npm start
+
+# Criar distribuição
+npm run package:win
 ```
 
----
+### Scripts Disponíveis
 
-## 📖 Documentação
+- `npm run dev` - Executa em modo desenvolvimento
+- `npm run build` - Compila para produção
+- `npm run build:main` - Compila apenas o processo principal
+- `npm run build:preload` - Compila apenas o preload
+- `npm run build:renderer` - Compila apenas o renderer
+- `npm run package:win` - Cria pacote para Windows
+- `npm run package:mac` - Cria pacote para macOS
+- `npm run package:linux` - Cria pacote para Linux
 
-### 🎯 **Guia de Início Rápido**
+### Arquitetura
 
-1. **Primeira execução**: Configure suas preferências básicas
-2. **Crie categorias**: Organize suas tarefas por projetos/áreas
-3. **Adicione tarefas**: Use o modal avançado de criação
-4. **Configure IA**: Ative o assistente para ajuda contextual
-5. **Use o Timer**: Implemente a técnica Pomodoro
+```
+krigzis/
+├── src/
+│   ├── main/           # Processo principal do Electron
+│   ├── renderer/       # Interface React
+│   └── shared/         # Código compartilhado
+├── assets/             # Ícones e recursos
+├── scripts/            # Scripts de build e distribuição
+└── webpack/            # Configurações do Webpack
+```
 
-### 📚 **Documentação Completa**
+## 🔄 Sistema de Atualizações
 
-- [📖 Manual do Usuário](docs/user-guide.md)
-- [⚙️ Configuração Avançada](docs/advanced-config.md)
-- [🤖 Setup do Assistente IA](docs/ai-setup.md)
-- [🔧 Troubleshooting](docs/troubleshooting.md)
-- [🔄 Sistema de Backup](docs/backup-guide.md)
+O Krigzis verifica automaticamente por atualizações através do GitHub Releases:
+- Verificação automática na inicialização
+- Notificação discreta quando há atualizações
+- Download manual da nova versão
+- Processo de atualização simples
 
----
+## 🐛 Suporte e Bugs
 
-## 🛠️ Tecnologias Utilizadas
+Se você encontrar algum problema ou tiver sugestões:
 
-<div align="center">
-
-| Frontend | Backend | Build & Deploy |
-|----------|---------|----------------|
-| ![Electron](https://img.shields.io/badge/Electron-191970?style=for-the-badge&logo=Electron&logoColor=white) | ![Node.js](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white) | ![Webpack](https://img.shields.io/badge/webpack-%238DD6F9.svg?style=for-the-badge&logo=webpack&logoColor=black) |
-| ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB) | ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white) | ![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white) |
-| ![CSS3](https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white) | ![JSON](https://img.shields.io/badge/JSON-000000?style=for-the-badge&logo=json&logoColor=white) | ![NPM](https://img.shields.io/badge/NPM-%23CB3837.svg?style=for-the-badge&logo=npm&logoColor=white) |
-
-</div>
-
-### 🏗️ **Arquitetura**
-
-- **Frontend**: React 18+ com TypeScript
-- **Desktop**: Electron 26+ com IPC otimizado
-- **Estilização**: CSS3 com variáveis customizadas
-- **Estado**: Context API + Custom Hooks
-- **Banco**: Sistema de memória com persistência JSON
-- **Build**: Webpack 5 com otimizações de produção
-
----
+1. **Verifique** se já existe uma [issue](https://github.com/PauloHYBEX/krigzis/issues) similar
+2. **Crie uma nova issue** com detalhes do problema
+3. **Inclua** informações do sistema e passos para reproduzir
 
 ## 🤝 Contribuição
 
-Contribuições são sempre bem-vindas! Aqui está como você pode ajudar:
+Contribuições são bem-vindas! Para contribuir:
 
-### 🎯 **Como Contribuir**
-
-1. **🍴 Fork** o projeto
-2. **🌿 Crie** uma branch (`git checkout -b feature/AmazingFeature`)
-3. **💻 Faça** suas alterações
-4. **✅ Teste** tudo funciona
-5. **📝 Commit** (`git commit -m 'Add some AmazingFeature'`)
-6. **🚀 Push** (`git push origin feature/AmazingFeature`)
-7. **📬 Abra** um Pull Request
-
-### 🐛 **Reportar Bugs**
-
-Encontrou um bug? [Abra uma issue](https://github.com/PauloHYBEX/krigzis/issues/new) com:
-
-- 📋 Descrição detalhada
-- 🔄 Passos para reproduzir
-- 💻 Informações do sistema
-- 📸 Screenshots (se aplicável)
-
-### 💡 **Sugerir Funcionalidades**
-
-Tem uma ideia? [Compartilhe conosco](https://github.com/PauloHYBEX/krigzis/discussions) através das Discussions!
-
----
-
-## 📊 Status do Projeto
-
-### 🎯 **Roadmap v1.x**
-
-- [x] ✅ Sistema de tarefas e categorias
-- [x] ✅ Timer Pomodoro integrado
-- [x] ✅ Sistema de notas vinculadas
-- [x] ✅ Assistente IA configurável
-- [x] ✅ Sistema de atualizações
-- [x] ✅ Interface responsiva
-- [ ] 🔄 Sincronização em nuvem
-- [ ] 🔄 Aplicativo mobile companion
-- [ ] 🔄 Plugins de terceiros
-- [ ] 🔄 Relatórios avançados
-
-### 📈 **Estatísticas**
-
-- **🏆 Versão Atual**: 1.0.0
-- **📅 Primeiro Release**: Agosto 2025
-- **💻 Plataformas**: Windows (Linux/Mac em breve)
-- **🌟 Funcionalidades**: 25+ implementadas
-
----
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
 
 ## 📄 Licença
 
 Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
 
----
-
 ## 🙏 Agradecimentos
 
-- **Electron Team** - Pela fantástica plataforma de desenvolvimento
-- **React Team** - Pela biblioteca que tornou tudo possível
-- **Lucide Icons** - Pelos ícones elegantes e consistentes
-- **OpenAI & Anthropic** - Pelas APIs de IA que potencializam o assistente
-- **Comunidade Open Source** - Por todas as bibliotecas e ferramentas utilizadas
-
----
-
-## 📞 Contato & Suporte
-
-<div align="center">
-
-**Desenvolvido com ❤️ por [Paulo Ricardo](https://github.com/PauloHYBEX)**
-
-[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/PauloHYBEX)
-[![Issues](https://img.shields.io/badge/Issues-FF6B6B?style=for-the-badge&logo=github&logoColor=white)](https://github.com/PauloHYBEX/krigzis/issues)
-[![Discussions](https://img.shields.io/badge/Discussions-4ECDC4?style=for-the-badge&logo=github&logoColor=white)](https://github.com/PauloHYBEX/krigzis/discussions)
-
-**🌟 Se o Krigzis te ajudou, considere dar uma estrela no repositório!**
-
-</div>
+- Comunidade Electron pela plataforma
+- Equipe React pelo framework
+- Desenvolvedores de todas as bibliotecas utilizadas
+- Beta testers e usuários que forneceram feedback
 
 ---
 
 <div align="center">
 
-### 🚀 **[Baixe agora o Krigzis](https://github.com/PauloHYBEX/krigzis/releases/latest) e revolucione sua produtividade!**
+**Feito com ❤️ por [Paulo Ricardo](https://github.com/PauloHYBEX)**
+
+[Website](https://github.com/PauloHYBEX/krigzis) • [Releases](https://github.com/PauloHYBEX/krigzis/releases) • [Issues](https://github.com/PauloHYBEX/krigzis/issues)
 
 </div>

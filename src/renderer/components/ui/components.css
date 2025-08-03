@@ -1,0 +1,79 @@
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 6px;
+  padding: 0;
+}
+
+.unified-card {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(200,200,200,0.08);
+  border-radius: 12px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  text-align: center;
+  position: relative;
+  min-height: 70px;
+  padding: 8px 4px;
+}
+
+.unified-card-compact {
+  min-height: 60px;
+  padding: 4px 2px;
+}
+
+.unified-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transform: scale(1.02);
+  border-color: var(--color-primary-teal, #00D4AA);
+}
+
+@media (max-width: 600px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 4px;
+  }
+  .unified-card {
+    min-height: 50px;
+    padding: 4px 2px;
+  }
+  .unified-card-compact {
+    min-height: 45px;
+  }
+}
+
+/* Quick Actions Modal */
+.quick-actions-modal {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.quick-actions-item {
+  transition: all 0.15s ease;
+}
+
+.quick-actions-item:hover {
+  background: rgba(0,212,170,0.08);
+}
+
+.quick-actions-item.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+
+.quick-actions-item.drag-over {
+  background: rgba(0,212,170,0.15);
+  border-color: var(--color-primary-teal);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+} 

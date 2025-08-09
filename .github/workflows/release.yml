@@ -35,8 +35,13 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Package Windows
-        run: npx electron-builder --win
+      - name: Package Windows (dir)
+        run: npx electron-builder --win --dir
+
+      - name: Zip win-unpacked
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "release/win-unpacked/*" -DestinationPath "release/Krigzis-${{ github.ref_name }}-win.zip"
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v1

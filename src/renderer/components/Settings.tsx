@@ -321,7 +321,16 @@ const CrashReportViewerContent: React.FC<{ isDark: boolean }> = ({ isDark }) => 
                 fontSize: '13px',
                 marginBottom: '12px'
               }}>
-                Contexto: {report.context}
+                <div style={{ fontWeight: 600, marginBottom: '6px' }}>Contexto:</div>
+                <pre style={{
+                  background: isDark ? '#0F172A' : '#F3F4F6',
+                  border: `1px solid ${isDark ? '#1F2937' : '#E5E7EB'}`,
+                  borderRadius: '8px',
+                  padding: '10px',
+                  overflowX: 'auto',
+                  whiteSpace: 'pre-wrap',
+                  margin: 0
+                }}>{JSON.stringify(report.context, null, 2)}</pre>
               </div>
             )}
 
@@ -717,7 +726,8 @@ import {
   BookOpen,
   AlertCircle,
   Shield,
-  Copy
+  Copy,
+  Layout
 } from 'lucide-react';
 
 interface SettingsProps {
@@ -951,18 +961,25 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
             padding: '0 24px',
             marginBottom: '24px',
           }}>
-            <h2 style={{
-              margin: 0,
-              fontSize: '20px',
-              fontWeight: 600,
-              color: theme.mode === 'dark' ? '#FFFFFF' : 'var(--color-text-primary)',
-              background: 'linear-gradient(135deg, #00D4AA 0%, #7B3FF2 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--space-3)'
             }}>
-              Configurações
-            </h2>
+              <SettingsIcon size={28} style={{ color: 'var(--color-primary-teal)' }} />
+              <h2 style={{
+                margin: 0,
+                fontSize: '20px',
+                fontWeight: 600,
+                color: theme.mode === 'dark' ? '#FFFFFF' : 'var(--color-text-primary)',
+                background: 'linear-gradient(135deg, #00D4AA 0%, #7B3FF2 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>
+                Configurações
+              </h2>
+            </div>
           </div>
           
           <nav>
@@ -1170,38 +1187,353 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
 
             {activeTab === 'aparencia' && (
               <div style={{ display: 'grid', gap: '24px' }}>
+                {/* Tema e Visual Geral */}
                 <div>
-                  <label style={{
-                    display: 'block',
-                    marginBottom: '8px',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    color: theme.mode === 'dark' ? '#FFFFFF' : 'var(--color-text-primary)',
+                  <h3 style={{
+                    margin: '0 0 16px 0',
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    color: '#FFFFFF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
                   }}>
-                    {t('settings.theme')}
-                  </label>
-                  <select
-                    value={settings.theme}
-                    onChange={(e) => {
-                      updateSettings({ theme: e.target.value as any });
-                      if (e.target.value !== theme.mode) {
-                        setTheme(e.target.value as any);
-                      }
-                    }}
-                    style={{
-                      width: '100%',
+                    <Palette size={18} />
+                    Visual e Tema
+                  </h3>
+                  <div style={{
+                    padding: '16px',
+                    backgroundColor: '#0A0A0A',
+                    border: '1px solid #2A2A2A',
+                    borderRadius: '12px',
+                    marginBottom: '20px'
+                  }}>
+                    <div style={{
                       padding: '12px',
-                      backgroundColor: theme.mode === 'dark' ? '#0A0A0A' : 'var(--color-bg-card)',
-                      border: `1px solid ${theme.mode === 'dark' ? '#2A2A2A' : 'var(--color-border-primary)'}`,
+                      backgroundColor: '#1A1A1A',
                       borderRadius: '8px',
-                      color: theme.mode === 'dark' ? '#FFFFFF' : 'var(--color-text-primary)',
+                      border: '1px solid #3A3A3A',
+                      textAlign: 'center'
+                    }}>
+                      <p style={{
+                        margin: 0,
+                        fontSize: '14px',
+                        color: '#A0A0A0'
+                      }}>
+                        🌙 <strong style={{ color: '#FFFFFF' }}>Modo Escuro</strong> - Otimizado para produtividade
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Fonte e Tamanho */}
+                <div>
+                  <h4 style={{
+                    margin: '0 0 12px 0',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: '#FFFFFF',
+                  }}>
+                    Tamanho da Fonte
+                  </h4>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <input
+                      type="range"
+                      min="12"
+                      max="20"
+                      step="1"
+                      value={settings.largeFontMode ? 16 : 14}
+                      onChange={(e) => {
+                        const fontSize = parseInt(e.target.value);
+                        updateSettings({ largeFontMode: fontSize > 14 });
+                      }}
+                      style={{
+                        flex: 1,
+                        accentColor: 'var(--color-primary-teal)',
+                      }}
+                    />
+                    <span style={{
                       fontSize: '14px',
-                    }}
-                  >
-                    <option value="dark">{t('settings.dark')}</option>
-                    <option value="light">{t('settings.light')}</option>
-                    <option value="system">{t('settings.system')}</option>
-                  </select>
+                      color: '#A0A0A0',
+                      minWidth: '40px',
+                      textAlign: 'right'
+                    }}>
+                      {settings.largeFontMode ? '16px' : '14px'}
+                    </span>
+                  </div>
+                  <p style={{
+                    fontSize: '12px',
+                    color: '#666',
+                    marginTop: '4px',
+                    marginBottom: 0
+                  }}>
+                    Ajuste o tamanho da fonte para melhor legibilidade
+                  </p>
+                </div>
+
+                {/* Densidade da Interface */}
+                <div>
+                  <h4 style={{
+                    margin: '0 0 12px 0',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: '#FFFFFF',
+                  }}>
+                    Densidade da Interface
+                  </h4>
+                  <div style={{ display: 'grid', gap: '8px' }}>
+                    {[
+                      { key: 'compact', label: 'Compacta', desc: 'Mais informações em menos espaço' },
+                      { key: 'normal', label: 'Normal', desc: 'Balanço ideal entre espaço e informação' },
+                      { key: 'comfortable', label: 'Confortável', desc: 'Mais espaçamento para facilitar a leitura' }
+                    ].map((density) => (
+                      <label key={density.key} style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '12px',
+                        padding: '12px',
+                        backgroundColor: '#0A0A0A',
+                        border: `1px solid ${(settings as any).interfaceDensity === density.key ? 'var(--color-primary-teal)' : '#2A2A2A'}`,
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}>
+                        <input
+                          type="radio"
+                          name="density"
+                          value={density.key}
+                          checked={(settings as any).interfaceDensity === density.key || (!((settings as any).interfaceDensity) && density.key === 'normal')}
+                          onChange={() => updateSettings({ interfaceDensity: density.key as 'compact' | 'normal' | 'comfortable' })}
+                          style={{
+                            accentColor: 'var(--color-primary-teal)',
+                            marginTop: '2px'
+                          }}
+                        />
+                        <div style={{ flex: 1 }}>
+                          <div style={{
+                            fontSize: '14px',
+                            color: '#FFFFFF',
+                            fontWeight: 500,
+                            marginBottom: '4px'
+                          }}>
+                            {density.label}
+                          </div>
+                          <div style={{
+                            fontSize: '12px',
+                            color: '#A0A0A0',
+                            lineHeight: '1.4'
+                          }}>
+                            {density.desc}
+                          </div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Transparência dos Cards */}
+                <div>
+                  <h4 style={{
+                    margin: '0 0 8px 0',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: '#FFFFFF',
+                  }}>
+                    Transparência dos Cards
+                  </h4>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <input
+                      type="range"
+                      min="80"
+                      max="100"
+                      step="5"
+                      value={((settings as any).cardOpacity || 95)}
+                      onChange={(e) => {
+                        const opacity = parseInt(e.target.value);
+                        updateSettings({ cardOpacity: opacity });
+                      }}
+                      style={{
+                        flex: 1,
+                        accentColor: 'var(--color-primary-teal)',
+                      }}
+                    />
+                    <span style={{
+                      fontSize: '14px',
+                      color: '#A0A0A0',
+                      minWidth: '40px',
+                      textAlign: 'right'
+                    }}>
+                      {((settings as any).cardOpacity || 95)}%
+                    </span>
+                  </div>
+                  <p style={{
+                    fontSize: '12px',
+                    color: '#666',
+                    marginTop: '4px',
+                    marginBottom: 0
+                  }}>
+                    Ajuste a transparência dos cards para personalizar a aparência
+                  </p>
+                </div>
+
+                {/* Acessibilidade */}
+                <div>
+                  <h3 style={{
+                    margin: '20px 0 16px 0',
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    color: '#FFFFFF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <Eye size={18} />
+                    Acessibilidade
+                  </h3>
+                  
+                  <div style={{ display: 'grid', gap: '12px' }}>
+                    {/* Alto Contraste */}
+                    <label style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '12px',
+                      backgroundColor: '#0A0A0A',
+                      border: '1px solid #2A2A2A',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}>
+                      <input
+                        type="checkbox"
+                        checked={settings.highContrastMode}
+                        onChange={(e) => updateSettings({ highContrastMode: e.target.checked })}
+                        style={{
+                          accentColor: 'var(--color-primary-teal)',
+                          transform: 'scale(1.1)',
+                        }}
+                      />
+                      <div style={{ flex: 1 }}>
+                        <div style={{
+                          fontSize: '14px',
+                          color: '#FFFFFF',
+                          fontWeight: 500,
+                          marginBottom: '2px'
+                        }}>
+                          Modo Alto Contraste
+                        </div>
+                        <div style={{
+                          fontSize: '12px',
+                          color: '#A0A0A0'
+                        }}>
+                          Aumenta o contraste para melhor visibilidade
+                        </div>
+                      </div>
+                    </label>
+
+                    {/* Reduzir Animações */}
+                    <label style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '12px',
+                      backgroundColor: '#0A0A0A',
+                      border: '1px solid #2A2A2A',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}>
+                      <input
+                        type="checkbox"
+                        checked={!((settings as any).reduceAnimations)}
+                        onChange={(e) => updateSettings({ reduceAnimations: !e.target.checked })}
+                        style={{
+                          accentColor: 'var(--color-primary-teal)',
+                          transform: 'scale(1.1)',
+                        }}
+                      />
+                      <div style={{ flex: 1 }}>
+                        <div style={{
+                          fontSize: '14px',
+                          color: '#FFFFFF',
+                          fontWeight: 500,
+                          marginBottom: '2px'
+                        }}>
+                          Animações e Transições
+                        </div>
+                        <div style={{
+                          fontSize: '12px',
+                          color: '#A0A0A0'
+                        }}>
+                          Desabilite para melhorar performance em computadores mais lentos
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Componentes Visíveis */}
+                <div>
+                  <h3 style={{
+                    margin: '20px 0 16px 0',
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    color: '#FFFFFF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <Layout size={18} />
+                    Componentes da Interface
+                  </h3>
+                  
+                  <div style={{ display: 'grid', gap: '12px' }}>
+                    {[
+                      { key: 'showTimer', label: 'Timer Pomodoro', desc: 'Exibir funcionalidade de timer' },
+                      { key: 'showReports', label: 'Relatórios', desc: 'Exibir aba de relatórios e estatísticas' },
+                      { key: 'showNotes', label: 'Notas', desc: 'Exibir sistema de notas e anotações' },
+                      { key: 'showQuickActions', label: 'Ações Rápidas', desc: 'Exibir botões de acesso rápido' },
+                      { key: 'showTaskCounters', label: 'Contadores de Tarefas', desc: 'Exibir números e estatísticas nas tarefas' }
+                    ].map((component) => (
+                      <label key={component.key} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px',
+                        backgroundColor: '#0A0A0A',
+                        border: '1px solid #2A2A2A',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}>
+                        <input
+                          type="checkbox"
+                          checked={(settings as any)[component.key]}
+                          onChange={(e) => updateSettings({ [component.key]: e.target.checked })}
+                          style={{
+                            accentColor: 'var(--color-primary-teal)',
+                            transform: 'scale(1.1)',
+                          }}
+                        />
+                        <div style={{ flex: 1 }}>
+                          <div style={{
+                            fontSize: '14px',
+                            color: '#FFFFFF',
+                            fontWeight: 500,
+                            marginBottom: '2px'
+                          }}>
+                            {component.label}
+                          </div>
+                          <div style={{
+                            fontSize: '12px',
+                            color: '#A0A0A0'
+                          }}>
+                            {component.desc}
+                          </div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -1705,6 +2037,155 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                   </p>
                 </div>
 
+                {/* Storage Type Selection */}
+                <div>
+                  <label style={{
+                    display: 'block',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    color: isDark ? '#FFFFFF' : '#374151',
+                    marginBottom: '8px'
+                  }}>
+                    Tipo de Armazenamento
+                  </label>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                    gap: '12px',
+                    marginBottom: '16px'
+                  }}>
+                    <div 
+                      onClick={() => updateSettings({ storageType: 'localStorage' })}
+                      style={{
+                        padding: '16px',
+                        backgroundColor: settings.storageType === 'localStorage' 
+                          ? (isDark ? '#1F4A3D' : '#D1FAE5') 
+                          : (isDark ? '#141414' : '#F9FAFB'),
+                        border: `2px solid ${
+                          settings.storageType === 'localStorage' 
+                            ? 'var(--color-primary-teal)' 
+                            : (isDark ? '#2A2A2A' : '#E5E7EB')
+                        }`,
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        marginBottom: '8px'
+                      }}>
+                        <div style={{
+                          width: '16px',
+                          height: '16px',
+                          borderRadius: '50%',
+                          backgroundColor: settings.storageType === 'localStorage' 
+                            ? 'var(--color-primary-teal)' 
+                            : (isDark ? '#6B7280' : '#D1D5DB'),
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          {settings.storageType === 'localStorage' && (
+                            <div style={{
+                              width: '6px',
+                              height: '6px',
+                              borderRadius: '50%',
+                              backgroundColor: '#FFFFFF'
+                            }} />
+                          )}
+                        </div>
+                        <span style={{
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          color: isDark ? '#FFFFFF' : '#1F2937'
+                        }}>
+                          Navegador (LocalStorage)
+                        </span>
+                      </div>
+                      <p style={{
+                        fontSize: '12px',
+                        color: isDark ? '#A0A0A0' : '#6B7280',
+                        margin: 0,
+                        lineHeight: '1.4'
+                      }}>
+                        Dados armazenados no navegador. Rápido e simples, mas limitado ao dispositivo.
+                      </p>
+                    </div>
+
+                    <div 
+                      onClick={() => updateSettings({ storageType: 'database' })}
+                      style={{
+                        padding: '16px',
+                        backgroundColor: settings.storageType === 'database' 
+                          ? (isDark ? '#1F4A3D' : '#D1FAE5') 
+                          : (isDark ? '#141414' : '#F9FAFB'),
+                        border: `2px solid ${
+                          settings.storageType === 'database' 
+                            ? 'var(--color-primary-teal)' 
+                            : (isDark ? '#2A2A2A' : '#E5E7EB')
+                        }`,
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        marginBottom: '8px'
+                      }}>
+                        <div style={{
+                          width: '16px',
+                          height: '16px',
+                          borderRadius: '50%',
+                          backgroundColor: settings.storageType === 'database' 
+                            ? 'var(--color-primary-teal)' 
+                            : (isDark ? '#6B7280' : '#D1D5DB'),
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          {settings.storageType === 'database' && (
+                            <div style={{
+                              width: '6px',
+                              height: '6px',
+                              borderRadius: '50%',
+                              backgroundColor: '#FFFFFF'
+                            }} />
+                          )}
+                        </div>
+                        <span style={{
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          color: isDark ? '#FFFFFF' : '#1F2937'
+                        }}>
+                          Banco de Dados Local
+                        </span>
+                      </div>
+                      <p style={{
+                        fontSize: '12px',
+                        color: isDark ? '#A0A0A0' : '#6B7280',
+                        margin: 0,
+                        lineHeight: '1.4'
+                      }}>
+                        Banco de dados persistente. Melhor para grandes volumes de dados e backup.
+                      </p>
+                    </div>
+                  </div>
+                  <p style={{
+                    fontSize: '12px',
+                    color: isDark ? '#6B7280' : '#9CA3AF',
+                    marginBottom: '24px',
+                    margin: '0 0 24px 0'
+                  }}>
+                    Escolha como seus dados serão armazenados. Você pode alterar essa configuração a qualquer momento.
+                  </p>
+                </div>
+
                 {/* Local Storage Path */}
                 <div>
                   <label style={{
@@ -1739,12 +2220,13 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                   <button
                       onClick={async () => {
                         try {
-                          const result = await (window as any).electronAPI?.selectFolder?.();
-                          if (result && !result.canceled) {
+                          const result = await (window as any).electronAPI?.system?.selectFolder?.();
+                          if (result && !result.canceled && result.filePaths?.length > 0) {
                             updateSettings({ dataPath: result.filePaths[0] });
                             showToast('Localização dos dados atualizada', 'success');
                           }
                         } catch (error) {
+                          console.error('Erro ao selecionar pasta:', error);
                           showToast('Erro ao selecionar pasta', 'error');
                         }
                       }}
@@ -1792,7 +2274,12 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                     <button
                       onClick={async () => {
                         try {
-                          const data = exportSettings();
+                          const electronAPI: any = (window as any).electronAPI;
+                          const data: string | undefined = await electronAPI?.database?.exportData?.();
+                          if (!data) {
+                            showToast('Erro ao gerar backup', 'error');
+                            return;
+                          }
                           const blob = new Blob([data], { type: 'application/json' });
                           const url = URL.createObjectURL(blob);
                           const a = document.createElement('a');
@@ -1975,10 +2462,11 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                         if (file) {
                           try {
                             const text = await file.text();
-                            const success = importSettings(text);
-                            if (success) {
+                            const electronAPI: any = (window as any).electronAPI;
+                            const res = await electronAPI?.database?.importData?.(text);
+                            if (res?.success !== false) {
                               showToast('Dados importados com sucesso', 'success');
-                              setTimeout(() => window.location.reload(), 1000);
+                              setTimeout(() => window.location.reload(), 800);
                             } else {
                               showToast('Erro: formato de arquivo inválido', 'error');
                             }
@@ -2111,71 +2599,51 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
 
             {activeTab === 'acessibilidade' && (
               <div style={{ display: 'grid', gap: '24px' }}>
-                <div style={{ display: 'grid', gap: '12px' }}>
-                  {/* Theme toggle setting removed - only dark theme supported */}
-                  <label style={{
-                    display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', padding: '12px',
-                    backgroundColor: theme.mode === 'dark' ? '#0A0A0A' : 'var(--color-bg-secondary)',
-                    border: `1px solid ${theme.mode === 'dark' ? '#2A2A2A' : 'var(--color-border-primary)'}`,
-                    borderRadius: '8px', transition: 'all var(--transition-theme)'
+                <div style={{
+                  padding: '24px',
+                  backgroundColor: '#0A0A0A',
+                  border: '1px solid #2A2A2A',
+                  borderRadius: '12px',
+                  textAlign: 'center'
+                }}>
+                  <Eye size={48} style={{ color: 'var(--color-primary-teal)', marginBottom: '16px' }} />
+                  <h3 style={{
+                    margin: '0 0 8px 0',
+                    fontSize: '18px',
+                    fontWeight: 600,
+                    color: '#FFFFFF'
                   }}>
-                    <input type="checkbox" checked={settings.showTimer} onChange={e => updateSettings({ showTimer: e.target.checked })} style={{ width: '18px', height: '18px', accentColor: '#00D4AA' }} />
-                    <span style={{ fontSize: '14px', color: theme.mode === 'dark' ? '#FFFFFF' : 'var(--color-text-primary)' }}>Exibir Timer Pomodoro</span>
-                  </label>
-                  <label style={{
-                    display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', padding: '12px',
-                    backgroundColor: theme.mode === 'dark' ? '#0A0A0A' : 'var(--color-bg-secondary)',
-                    border: `1px solid ${theme.mode === 'dark' ? '#2A2A2A' : 'var(--color-border-primary)'}`,
-                    borderRadius: '8px', transition: 'all var(--transition-theme)'
+                    Configurações Migradas
+                  </h3>
+                  <p style={{
+                    margin: '0 0 16px 0',
+                    fontSize: '14px',
+                    color: '#A0A0A0',
+                    lineHeight: '1.5'
                   }}>
-                    <input type="checkbox" checked={settings.showReports} onChange={e => updateSettings({ showReports: e.target.checked })} style={{ width: '18px', height: '18px', accentColor: '#00D4AA' }} />
-                    <span style={{ fontSize: '14px', color: theme.mode === 'dark' ? '#FFFFFF' : 'var(--color-text-primary)' }}>Exibir Relatórios</span>
-                  </label>
-                  <label style={{
-                    display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', padding: '12px',
-                    backgroundColor: theme.mode === 'dark' ? '#0A0A0A' : 'var(--color-bg-secondary)',
-                    border: `1px solid ${theme.mode === 'dark' ? '#2A2A2A' : 'var(--color-border-primary)'}`,
-                    borderRadius: '8px', transition: 'all var(--transition-theme)'
-                  }}>
-                    <input type="checkbox" checked={settings.showNotes} onChange={e => updateSettings({ showNotes: e.target.checked })} style={{ width: '18px', height: '18px', accentColor: '#00D4AA' }} />
-                    <span style={{ fontSize: '14px', color: theme.mode === 'dark' ? '#FFFFFF' : 'var(--color-text-primary)' }}>Exibir Notas</span>
-                  </label>
-                  <label style={{
-                    display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', padding: '12px',
-                    backgroundColor: theme.mode === 'dark' ? '#0A0A0A' : 'var(--color-bg-secondary)',
-                    border: `1px solid ${theme.mode === 'dark' ? '#2A2A2A' : 'var(--color-border-primary)'}`,
-                    borderRadius: '8px', transition: 'all var(--transition-theme)'
-                  }}>
-                    <input type="checkbox" checked={settings.showQuickActions} onChange={e => updateSettings({ showQuickActions: e.target.checked })} style={{ width: '18px', height: '18px', accentColor: '#00D4AA' }} />
-                    <span style={{ fontSize: '14px', color: theme.mode === 'dark' ? '#FFFFFF' : 'var(--color-text-primary)' }}>Exibir Ações Rápidas</span>
-                  </label>
-                  <label style={{
-                    display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', padding: '12px',
-                    backgroundColor: theme.mode === 'dark' ? '#0A0A0A' : 'var(--color-bg-secondary)',
-                    border: `1px solid ${theme.mode === 'dark' ? '#2A2A2A' : 'var(--color-border-primary)'}`,
-                    borderRadius: '8px', transition: 'all var(--transition-theme)'
-                  }}>
-                    <input type="checkbox" checked={settings.highContrastMode} onChange={e => updateSettings({ highContrastMode: e.target.checked })} style={{ width: '18px', height: '18px', accentColor: '#00D4AA' }} />
-                    <span style={{ fontSize: '14px', color: theme.mode === 'dark' ? '#FFFFFF' : 'var(--color-text-primary)' }}>Modo Alto Contraste</span>
-                  </label>
-                  <label style={{
-                    display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', padding: '12px',
-                    backgroundColor: theme.mode === 'dark' ? '#0A0A0A' : 'var(--color-bg-secondary)',
-                    border: `1px solid ${theme.mode === 'dark' ? '#2A2A2A' : 'var(--color-border-primary)'}`,
-                    borderRadius: '8px', transition: 'all var(--transition-theme)'
-                  }}>
-                    <input type="checkbox" checked={settings.largeFontMode} onChange={e => updateSettings({ largeFontMode: e.target.checked })} style={{ width: '18px', height: '18px', accentColor: '#00D4AA' }} />
-                    <span style={{ fontSize: '14px', color: theme.mode === 'dark' ? '#FFFFFF' : 'var(--color-text-primary)' }}>Fonte Grande</span>
-                  </label>
-                  <label style={{
-                    display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', padding: '12px',
-                    backgroundColor: theme.mode === 'dark' ? '#0A0A0A' : 'var(--color-bg-secondary)',
-                    border: `1px solid ${theme.mode === 'dark' ? '#2A2A2A' : 'var(--color-border-primary)'}`,
-                    borderRadius: '8px', transition: 'all var(--transition-theme)'
-                  }}>
-                    <input type="checkbox" checked={settings.showTaskCounters} onChange={e => updateSettings({ showTaskCounters: e.target.checked })} style={{ width: '18px', height: '18px', accentColor: '#00D4AA' }} />
-                    <span style={{ fontSize: '14px', color: theme.mode === 'dark' ? '#FFFFFF' : 'var(--color-text-primary)' }}>Exibir Contador de Tarefas</span>
-                  </label>
+                    As configurações de acessibilidade foram movidas para a aba <strong style={{ color: '#FFFFFF' }}>Aparência</strong> para melhor organização.
+                  </p>
+                  <button
+                    onClick={() => setActiveTab('aparencia')}
+                    style={{
+                      padding: '12px 24px',
+                      backgroundColor: 'var(--color-primary-teal)',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      margin: '0 auto'
+                    }}
+                  >
+                    <Palette size={16} />
+                    Ir para Aparência
+                  </button>
                 </div>
 
                 {/* Seção de Limpeza de Dados */}

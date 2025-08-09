@@ -208,14 +208,17 @@ export const useCategories = (tasks?: any[]) => {
 
   // Contar tarefas por categoria usando dados em tempo real
   const getTaskCountByCategory = useCallback((categoryId: number) => {
-    if (!tasks || !Array.isArray(tasks)) return 0;
+    if (!tasks || !Array.isArray(tasks)) {
+      console.log(`No tasks available for counting. Tasks: ${tasks ? (tasks as any[]).length : 'null'}`);
+      return 0;
+    }
     
     try {
       const category = categories.find(cat => cat.id === categoryId);
-      if (!category) return 0;
-
-      // Debug log para cada categoria
-      console.log(`Counting tasks for category ${category.name} (id: ${categoryId}, isSystem: ${category.isSystem})`);
+      if (!category) {
+        console.log(`Category with id ${categoryId} not found`);
+        return 0;
+      }
 
       if (category.isSystem) {
         // Para categorias do sistema, mapear pelo status
@@ -229,13 +232,11 @@ export const useCategories = (tasks?: any[]) => {
         const targetStatus = statusMap[category.name];
         const count = tasks.filter((task: any) => task.status === targetStatus).length;
         
-        console.log(`System category ${category.name}: looking for status '${targetStatus}', found ${count} tasks`);
         return count;
       } else {
         // Para categorias customizadas, usar category_id
         const count = tasks.filter((task: any) => task.category_id === categoryId).length;
         
-        console.log(`Custom category ${category.name}: looking for category_id ${categoryId}, found ${count} tasks`);
         return count;
       }
     } catch (err) {
@@ -255,6 +256,21 @@ export const useCategories = (tasks?: any[]) => {
   useEffect(() => {
     loadCategories();
   }, [loadCategories]);
+
+  // Escutar eventos de atualização de tarefas para recalcular contadores
+  useEffect(() => {
+    const handleTasksUpdate = () => {
+      console.log('🔄 useCategories: Tasks updated, recalculating counts...');
+      // Forçar recálculo através de uma atualização do estado
+      setCategories(prev => [...prev]);
+    };
+
+    window.addEventListener('tasksUpdated', handleTasksUpdate);
+    
+    return () => {
+      window.removeEventListener('tasksUpdated', handleTasksUpdate);
+    };
+  }, []);
 
   return {
     categories: categoriesWithCount,

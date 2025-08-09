@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, ipcMain, globalShortcut } from 'electron';
+import { app, BrowserWindow, Menu, ipcMain, globalShortcut, dialog, nativeImage } from 'electron';
 import * as path from 'path';
 import DatabaseManager from './database-manager';
 import { SecureLogger, logger, logInfo, logError } from './logging/logger';
@@ -10,7 +10,7 @@ import UpdateDownloader from './version/update-downloader';
 
 class MainApplication {
   private mainWindow: BrowserWindow | null = null;
-  private isDev = process.env.NODE_ENV === 'development';
+  private isDev = !app.isPackaged || process.env.NODE_ENV === 'development';
   private database: DatabaseManager;
   private logger: SecureLogger;
   private versionManager: VersionManager;
@@ -26,6 +26,12 @@ class MainApplication {
     
     // Configurar nome da aplicação para notificações
     app.setName('Krigzis');
+    
+    // Garantir que o app use o nome correto
+    if (process.platform === 'win32' || process.platform === 'linux') {
+      // No Windows e Linux, definir o app user model ID
+      app.setAppUserModelId('com.krigzis.taskmanager');
+    }
     
     // Inicializar crash reporter
     crashReporterManager.initialize();
@@ -55,8 +61,10 @@ class MainApplication {
         // Configurar menu com atalhos
         this.setupMenu();
 
-        // Registrar atalhos globais
-        this.setupGlobalShortcuts();
+        // Registrar atalhos globais apenas em desenvolvimento
+        if (this.isDev) {
+          this.setupGlobalShortcuts();
+        }
 
         app.on('activate', () => {
           if (BrowserWindow.getAllWindows().length === 0) {
@@ -100,27 +108,111 @@ class MainApplication {
 
   private createMainWindow(): void {
     try {
+    const resolveIconPath = (): string => {
+      const candidates: string[] = [];
+      if (process.platform === 'win32') {
+        candidates.push(
+          // Priorizar icon.ico (multi-size) e depois krigzis.ico
+          path.join(__dirname, '../assets/icon.ico'),
+          path.join(__dirname, 'assets/icon.ico'),
+          path.resolve(process.resourcesPath || '', 'assets/icon.ico'),
+          path.resolve(process.cwd(), 'assets/icon.ico'),
+          path.resolve(__dirname, '../../assets/icon.ico'),
+          path.join(__dirname, '../assets/krigzis.ico'),
+          path.join(__dirname, 'assets/krigzis.ico'),
+          path.resolve(process.resourcesPath || '', 'assets/krigzis.ico'),
+          path.resolve(process.cwd(), 'assets/krigzis.ico'),
+          path.resolve(__dirname, '../../assets/krigzis.ico'),
+          // PNG fallbacks
+          path.join(__dirname, '../assets/icon.png'),
+          path.join(__dirname, 'assets/icon.png'),
+          path.resolve(process.resourcesPath || '', 'assets/icon.png'),
+          path.resolve(process.cwd(), 'assets/icon.png'),
+          path.resolve(__dirname, '../../assets/icon.png')
+        );
+      } else if (process.platform === 'darwin') {
+        candidates.push(
+          path.join(__dirname, '../assets/icon.icns'),
+          path.join(__dirname, 'assets/icon.icns'),
+          path.resolve(process.resourcesPath || '', 'assets/icon.icns'),
+          path.resolve(process.cwd(), 'assets/icon.icns'),
+          path.resolve(__dirname, '../../assets/icon.icns')
+        );
+      } else {
+        candidates.push(
+          path.join(__dirname, '../assets/icon.png'),
+          path.join(__dirname, 'assets/icon.png'),
+          path.resolve(process.resourcesPath || '', 'assets/icon.png'),
+          path.resolve(process.cwd(), 'assets/icon.png'),
+          path.resolve(__dirname, '../../assets/icon.png')
+        );
+      }
+      const fs = require('fs');
+      const found = candidates.find(p => {
+        try { return fs.existsSync(p); } catch { return false; }
+      });
+      if (!found) {
+        console.warn('[Icon] No icon found. Candidates checked:', candidates);
+        return candidates[0]!;
+      }
+      console.log('[Icon] Using icon at:', found);
+      return found;
+    };
+
+    const iconPath = resolveIconPath();
+
     this.mainWindow = new BrowserWindow({
       width: 1200,
       height: 800,
       minWidth: 800,
       minHeight: 600,
+      title: 'Krigzis - Gerenciador de Tarefas',
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
         preload: path.join(__dirname, 'preload.js'),
         webSecurity: this.isDev ? false : true, // Only disable in development
-        allowRunningInsecureContent: this.isDev ? true : false
+        allowRunningInsecureContent: this.isDev ? true : false,
+        // Desabilitar DevTools em produção
+        devTools: this.isDev
       },
       titleBarStyle: 'default',
       show: false, // Don't show until ready
-      backgroundColor: '#0A0A0A' // Dark theme background
+      backgroundColor: '#0A0A0A', // Dark theme background
+      icon: iconPath // Ícone da aplicação por plataforma
     });
+
+    // Refrescar ícone explicitamente (Windows/Linux)
+    try {
+      const tryPaths = [iconPath,
+        // Prefer PNG for runtime setIcon if ICO fails
+        path.join(__dirname, '../assets/icon.png'),
+        path.join(__dirname, 'assets/icon.png'),
+        path.resolve(process.resourcesPath || '', 'assets/icon.png'),
+        path.resolve(process.cwd(), 'assets/icon.png'),
+        path.resolve(__dirname, '../../assets/icon.png')
+      ];
+      const fs = require('fs');
+      const { nativeImage } = require('electron');
+      for (const p of tryPaths) {
+        if (!p) continue;
+        if (!fs.existsSync(p)) continue;
+        const img = nativeImage.createFromPath(p);
+        if (!img.isEmpty()) {
+          this.mainWindow.setIcon(img);
+          console.log('[Icon] setIcon applied from:', p);
+          break;
+        }
+      }
+    } catch (e) {
+      console.warn('[Icon] setIcon failed:', e);
+    }
 
     // Load the app
     if (this.isDev) {
       // In development, load from webpack-dev-server
       this.mainWindow.loadURL('http://localhost:3000');
+      // Abrir DevTools apenas em desenvolvimento
       this.mainWindow.webContents.openDevTools();
     } else {
       // In production, load from file
@@ -131,6 +223,7 @@ class MainApplication {
     this.mainWindow.once('ready-to-show', () => {
       this.mainWindow?.show();
       
+      // Não abrir DevTools em produção
       if (this.isDev) {
         this.mainWindow?.webContents.openDevTools();
       }
@@ -222,11 +315,12 @@ class MainApplication {
             label: 'Forçar Recarregamento',
             accelerator: 'CmdOrCtrl+Shift+R'
           },
-          { 
+          // Exibir DevTools apenas no modo desenvolvimento
+          ...(this.isDev ? [{ 
             role: 'toggleDevTools', 
             label: 'Ferramentas do Desenvolvedor',
             accelerator: process.platform === 'darwin' ? 'Cmd+Alt+I' : 'Ctrl+Shift+I'
-          },
+          } as Electron.MenuItemConstructorOptions] : []),
           { type: 'separator' },
           { role: 'resetZoom', label: 'Zoom Normal' },
           { role: 'zoomIn', label: 'Aumentar Zoom' },
@@ -441,6 +535,26 @@ class MainApplication {
       }
     });
 
+    // Backup/export handlers
+    ipcMain.handle('database:exportData', async () => {
+      try {
+        return await this.database.exportData();
+      } catch (error) {
+        console.error('Error exporting data:', error);
+        throw error;
+      }
+    });
+
+    ipcMain.handle('database:importData', async (event, jsonData: string) => {
+      try {
+        await this.database.importData(jsonData);
+        return { success: true };
+      } catch (error) {
+        console.error('Error importing data:', error);
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
+      }
+    });
+
     ipcMain.handle('database:linkNoteToTask', async (event, noteId, taskId) => {
       try {
         return await this.database.linkNoteToTask(noteId, taskId);
@@ -481,6 +595,29 @@ class MainApplication {
     // System handlers
     ipcMain.on('app:getVersion', (event) => {
       event.returnValue = app.getVersion();
+    });
+
+    // File system handlers
+    ipcMain.handle('system:selectFolder', async () => {
+      try {
+        const result = await dialog.showOpenDialog(this.mainWindow!, {
+          title: 'Selecionar Pasta para Dados',
+          properties: ['openDirectory', 'createDirectory'],
+          buttonLabel: 'Selecionar Pasta'
+        });
+        
+        logInfo('Folder selection dialog completed', 'system', {
+          canceled: result.canceled,
+          pathsCount: result.filePaths?.length || 0
+        });
+        
+        return result;
+      } catch (error) {
+        logError('Failed to show folder selection dialog', 'system', {
+          error: error instanceof Error ? error.message : String(error)
+        });
+        throw error;
+      }
     });
 
     // Settings operations will be implemented when needed

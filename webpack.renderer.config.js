@@ -66,9 +66,22 @@ module.exports = {
     },
     compress: true,
     port: 3000,
-    hot: true, // Habilitando hot reload
-    liveReload: true, // Habilitando live reload
+    hot: false, // Desabilitando hot reload para evitar loops
+    liveReload: false, // Desabilitando live reload
     historyApiFallback: true,
+    watchFiles: {
+      paths: ['src/**/*'],
+      options: {
+        usePolling: false,
+        ignored: /node_modules/,
+      },
+    },
+    client: {
+      overlay: {
+        errors: true,
+        warnings: false,
+      },
+    },
     headers: {
       'Access-Control-Allow-Origin': '*',
     }

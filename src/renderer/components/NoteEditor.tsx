@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useTheme } from '../hooks/useTheme';
 import { useDatabase } from '../hooks/useDatabase';
 import { Button } from './ui/Button';
@@ -7,7 +7,7 @@ import {
   ArrowLeft, Save, Trash2, Pin, Tag, Link2, 
   Image, Paperclip, Bold, Italic, List, 
   Hash, Quote, Code, Eye, Edit, Copy,
-  ChevronDown, ChevronUp
+  ChevronDown, ChevronUp, Upload, X
 } from 'lucide-react';
 import { Note, CreateNoteData } from '../../shared/types/note';
 
@@ -40,9 +40,85 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
   const [showTaskSelector, setShowTaskSelector] = useState(false);
   const [isTagsExpanded, setIsTagsExpanded] = useState(false);
   const [isLinkedTasksExpanded, setIsLinkedTasksExpanded] = useState(false);
+  const [attachedImages, setAttachedImages] = useState<string[]>(note?.attachedImages || []);
+  const [isDragOver, setIsDragOver] = useState(false);
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const isDark = theme.mode === 'dark';
+
+  // Função para converter arquivo para base64
+  const fileToBase64 = useCallback((file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  }, []);
+
+  // Função para lidar com upload de imagens
+  const handleImageUpload = useCallback(async (files: FileList) => {
+    const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+    
+    for (const file of imageFiles) {
+      try {
+        const base64 = await fileToBase64(file);
+        setAttachedImages(prev => [...prev, base64]);
+        
+        // Se estiver no modo markdown, adicionar a sintaxe da imagem
+        if (format === 'markdown') {
+          const imageMarkdown = `![${file.name}](${base64})\n`;
+          setContent(prev => prev + imageMarkdown);
+        }
+      } catch (error) {
+        console.error('Erro ao processar imagem:', error);
+      }
+    }
+  }, [format, fileToBase64]);
+
+  // Drag and Drop handlers
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleImageUpload(files);
+    }
+  }, [handleImageUpload]);
+
+  // Ctrl+V handler para colar imagens
+  const handlePaste = useCallback((e: React.ClipboardEvent) => {
+    const items = e.clipboardData.items;
+    
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith('image/')) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (file) {
+          const fileList = new DataTransfer();
+          fileList.items.add(file);
+          handleImageUpload(fileList.files);
+        }
+      }
+    }
+  }, [handleImageUpload]);
+
+  // Função para remover imagem
+  const removeImage = useCallback((index: number) => {
+    setAttachedImages(prev => prev.filter((_, i) => i !== index));
+  }, []);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -50,6 +126,13 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [content]);
+
+  // Carregar imagens anexadas quando a nota for carregada
+  useEffect(() => {
+    if (note?.attachedImages) {
+      setAttachedImages(note.attachedImages);
+    }
+  }, [note]);
 
   const handleSave = () => {
     console.log('📝 NoteEditor: handleSave called');
@@ -68,7 +151,8 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
       format,
       tags,
       linkedTaskIds,
-      color: color || undefined
+      color: color || undefined,
+      attachedImages: attachedImages // Incluir imagens anexadas
     };
 
     console.log('📝 NoteEditor: Saving note data:', noteData);
@@ -118,23 +202,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
     }, 0);
   };
 
-  const handlePaste = async (e: React.ClipboardEvent) => {
-    const items = e.clipboardData.items;
-    
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      
-      if (item.type.indexOf('image') !== -1) {
-        e.preventDefault();
-        const file = item.getAsFile();
-        if (file) {
-          // TODO: Implementar upload de imagem
-          const imageText = `![Imagem colada](data:image/png;base64,...)`;
-          insertMarkdown(imageText);
-        }
-      }
-    }
-  };
+
 
   const renderPreview = () => {
     if (format === 'text') {
@@ -325,8 +393,36 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
               >
                 <List size={14} />
               </button>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  background: 'none',
+                  border: `1px solid ${isDark ? 'var(--color-border-primary)' : '#E5E7EB'}`,
+                  color: isDark ? 'var(--color-text-primary)' : '#374151',
+                  cursor: 'pointer',
+                  padding: 6,
+                  borderRadius: 4
+                }}
+                title="Adicionar Imagem"
+              >
+                <Image size={14} />
+              </button>
             </div>
           )}
+          
+          {/* Input oculto para upload de arquivos */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              if (e.target.files) {
+                handleImageUpload(e.target.files);
+              }
+            }}
+          />
 
           {/* Seletor de formato */}
           <select
@@ -437,27 +533,68 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
               {renderPreview()}
             </div>
           ) : (
-            <textarea
-              ref={textareaRef}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              onPaste={handlePaste}
-              placeholder="Escreva sua nota aqui..."
+            <div 
               style={{
+                position: 'relative',
                 width: '100%',
-                minHeight: '100%',
-                padding: 16,
-                backgroundColor: isDark ? 'var(--color-bg-secondary)' : '#FFFFFF',
-                border: `1px solid ${isDark ? 'var(--color-border-primary)' : '#E5E7EB'}`,
-                borderRadius: 8,
-                color: isDark ? 'var(--color-text-primary)' : '#1F2937',
-                fontSize: 14,
-                lineHeight: 1.6,
-                resize: 'none',
-                outline: 'none',
-                fontFamily: format === 'markdown' ? 'monospace' : 'inherit'
+                minHeight: '100%'
               }}
-            />
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <textarea
+                ref={textareaRef}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                onPaste={handlePaste}
+                placeholder="Escreva sua nota aqui... (Ctrl+V para colar imagens ou arraste e solte)"
+                style={{
+                  width: '100%',
+                  minHeight: '100%',
+                  padding: 16,
+                  backgroundColor: isDark ? 'var(--color-bg-secondary)' : '#FFFFFF',
+                  border: `2px ${isDragOver ? 'dashed' : 'solid'} ${isDragOver ? 'var(--color-primary-teal)' : (isDark ? 'var(--color-border-primary)' : '#E5E7EB')}`,
+                  borderRadius: 8,
+                  color: isDark ? 'var(--color-text-primary)' : '#1F2937',
+                  fontSize: 14,
+                  lineHeight: 1.6,
+                  resize: 'none',
+                  outline: 'none',
+                  fontFamily: format === 'markdown' ? 'monospace' : 'inherit',
+                  transition: 'border-color 0.2s ease'
+                }}
+              />
+              
+              {/* Overlay de drag & drop */}
+              {isDragOver && (
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(0, 212, 170, 0.1)',
+                  border: '2px dashed var(--color-primary-teal)',
+                  borderRadius: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexDirection: 'column',
+                  gap: '8px',
+                  pointerEvents: 'none'
+                }}>
+                  <Upload size={32} color="var(--color-primary-teal)" />
+                  <span style={{
+                    color: 'var(--color-primary-teal)',
+                    fontSize: '16px',
+                    fontWeight: 600
+                  }}>
+                    Solte as imagens aqui
+                  </span>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
@@ -467,6 +604,73 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
           borderTop: `1px solid ${isDark ? 'var(--color-border-primary)' : '#E5E7EB'}`,
           backgroundColor: isDark ? 'var(--color-bg-secondary)' : '#FFFFFF'
         }}>
+          {/* Imagens Anexadas */}
+          {attachedImages.length > 0 && (
+            <div style={{ marginBottom: 24 }}>
+              <h4 style={{
+                fontSize: 14,
+                fontWeight: 600,
+                color: isDark ? 'var(--color-text-primary)' : '#1F2937',
+                margin: '0 0 12px 0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6
+              }}>
+                <Image size={16} />
+                Imagens Anexadas ({attachedImages.length})
+              </h4>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))',
+                gap: '8px',
+                maxHeight: '200px',
+                overflowY: 'auto'
+              }}>
+                {attachedImages.map((image, index) => (
+                  <div key={index} style={{
+                    position: 'relative',
+                    borderRadius: '6px',
+                    overflow: 'hidden',
+                    aspectRatio: '1',
+                    border: `1px solid ${isDark ? 'var(--color-border-primary)' : '#E5E7EB'}`
+                  }}>
+                    <img 
+                      src={image} 
+                      alt={`Anexo ${index + 1}`}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                    />
+                    <button
+                      onClick={() => removeImage(index)}
+                      style={{
+                        position: 'absolute',
+                        top: '4px',
+                        right: '4px',
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '50%',
+                        background: 'rgba(0, 0, 0, 0.7)',
+                        border: 'none',
+                        color: 'white',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '12px'
+                      }}
+                      title="Remover imagem"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Tags */}
           <div style={{ marginBottom: 16 }}>
             <button

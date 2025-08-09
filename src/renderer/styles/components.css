@@ -660,24 +660,7 @@
   }
 }
 
-/* === SCROLLBAR STYLING === */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-bg-secondary);
-  border-radius: var(--radius-sm);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-border-secondary);
-  border-radius: var(--radius-sm);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted);
-}
+/* Scrollbar styling is now in global.css */
 
 /* === FOCUS MANAGEMENT === */
 .focus-visible-only:focus {
@@ -1189,6 +1172,24 @@
   overflow-y: auto;
 }
 
+.notes-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notes-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+.notes-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 170, 0.5);
+  border-radius: 3px;
+}
+
+.notes-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 212, 170, 0.7);
+}
+
 .notes-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -1213,11 +1214,55 @@
   box-shadow: var(--shadow-lg);
 }
 
+/* Eye icon on hover */
+
+/* Ações aparecem somente no hover */
+.note-actions .note-view-button,
+.note-actions .delete-button,
+.note-list-actions .note-view-button,
+.note-list-actions .delete-button {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  padding: var(--space-1);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.note-actions .note-view-button:hover,
+.note-list-actions .note-view-button:hover,
+.note-actions .delete-button:hover,
+.note-list-actions .delete-button:hover {
+  color: var(--color-text-primary);
+  background: var(--color-bg-hover);
+}
+
+.note-card:hover .note-actions .note-view-button,
+.note-card:hover .note-actions .delete-button,
+.note-list-item:hover .note-list-actions .note-view-button,
+.note-list-item:hover .note-list-actions .delete-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Overlay actions so they don't push the content preview */
+.note-card .note-actions {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+}
+
 .note-card-content {
   padding: var(--space-3);
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative; /* garantir stacking context */
 }
 
 .note-header {
@@ -1225,6 +1270,7 @@
   align-items: flex-start;
   justify-content: space-between;
   margin-bottom: var(--space-2);
+  position: relative;
 }
 
 .note-title {
@@ -1246,6 +1292,10 @@
   align-items: center;
   gap: var(--space-1);
   margin-left: var(--space-2);
+  position: absolute; /* overlay */
+  top: 4px;
+  right: 4px;
+  z-index: 3;
 }
 
 .pin-icon {
@@ -1253,12 +1303,12 @@
 }
 
 .delete-button {
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   padding: var(--space-1);
   min-width: auto;
-  width: 20px;
-  height: 20px;
-  display: flex;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
 }
@@ -1275,6 +1325,8 @@
   overflow: hidden;
   margin: 0;
   line-height: var(--line-height-normal);
+  position: relative;
+  z-index: 1; /* manter texto acima do fundo, abaixo das ações */
 }
 
 .note-footer {
@@ -1539,6 +1591,260 @@
   flex: 1;
   overflow-y: auto;
   padding: var(--space-6);
+}
+
+.linked-tasks-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.linked-tasks-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+.linked-tasks-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 170, 0.5);
+  border-radius: 3px;
+}
+
+.linked-tasks-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 212, 170, 0.7);
+}
+
+/* === NOTE VIEWER MODAL === */
+.note-viewer-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fade-in 0.2s ease-out;
+}
+
+.note-viewer-modal {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-xl);
+  width: 92%;
+  max-width: 900px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-2xl);
+  animation: slide-in 0.3s ease-out;
+}
+
+.note-viewer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--color-border-primary);
+  background: var(--color-bg-secondary);
+}
+
+.note-viewer-title-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.note-viewer-title {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.note-viewer-format-badge {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  background: var(--color-bg-hover);
+  border: 1px solid var(--color-border-primary);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.note-viewer-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.note-viewer-content {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+  overflow: auto;
+}
+
+.note-viewer-text {
+  min-width: 0;
+}
+
+.note-viewer-pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-normal);
+}
+
+.note-viewer-images {
+  min-height: 0;
+}
+
+.note-viewer-section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--space-2);
+}
+
+.note-images-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.note-image-button {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: zoom-in;
+  width: 100%;
+}
+
+.note-image {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-primary);
+}
+
+/* Lightbox */
+.note-image-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  animation: fade-in 0.15s ease-out;
+}
+
+.note-image-lightbox-img {
+  max-width: 95vw;
+  max-height: 90vh;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-2xl);
+}
+
+.note-image-lightbox-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: var(--radius-md);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.note-image-lightbox-close:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+@media (max-width: 900px) {
+  .note-viewer-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* === CONFIRM DELETE NOTE MODAL === */
+.confirm-delete-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  animation: fade-in 0.2s ease-out;
+}
+
+.confirm-delete-modal {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-xl);
+  width: 92%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-2xl);
+  animation: slide-in 0.25s ease-out;
+}
+
+.confirm-delete-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border-primary);
+  background: var(--color-bg-secondary);
+}
+
+.confirm-delete-title-group { display: flex; align-items: center; gap: var(--space-2); }
+.confirm-delete-icon { color: var(--color-error); }
+.confirm-delete-title { margin: 0; font-size: var(--font-size-lg); color: var(--color-text-primary); }
+
+.confirm-delete-close {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  width: 28px; height: 28px; border-radius: var(--radius-sm);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.confirm-delete-close:hover { background: var(--color-bg-hover); color: var(--color-text-primary); }
+
+.confirm-delete-content { padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.confirm-delete-message { margin: 0; color: var(--color-text-primary); }
+
+.confirm-delete-links { border: 1px dashed var(--color-border-primary); border-radius: var(--radius-md); padding: var(--space-3); background: var(--color-bg-secondary); }
+.links-title { display: flex; align-items: center; gap: var(--space-2); font-weight: var(--font-weight-medium); color: var(--color-text-secondary); margin-bottom: var(--space-2); }
+.links-list { margin: 0; padding-left: var(--space-4); color: var(--color-text-primary); }
+.links-item { margin: 2px 0; }
+.links-warning { margin: var(--space-2) 0 0 0; color: var(--color-text-muted); font-size: var(--font-size-sm); }
+
+.confirm-delete-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--color-border-primary);
+  background: var(--color-bg-secondary);
 }
 
 .linked-tasks-loading {

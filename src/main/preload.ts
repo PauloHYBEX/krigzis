@@ -42,6 +42,9 @@ export interface ElectronAPI {
     read: (query: any) => Promise<any>;
     update: (data: any) => Promise<any>;
     delete: (id: string) => Promise<any>;
+    // Backup/export
+    exportData: () => Promise<any>;
+    importData: (jsonData: string) => Promise<any>;
   };
   
   // Settings operations
@@ -94,6 +97,7 @@ export interface ElectronAPI {
   system: {
     platform: string;
     version: string;
+    selectFolder: () => Promise<any>;
   };
 
   // Generic invoke method for flexibility
@@ -147,6 +151,10 @@ const electronAPI: ElectronAPI = {
     read: (query: any) => ipcRenderer.invoke('database:read', query),
     update: (data: any) => ipcRenderer.invoke('database:update', data),
     delete: (id: string) => ipcRenderer.invoke('database:delete', id),
+
+    // Backup/export
+    exportData: () => ipcRenderer.invoke('database:exportData'),
+    importData: (jsonData: string) => ipcRenderer.invoke('database:importData', jsonData),
   },
   
   settings: {
@@ -196,6 +204,7 @@ const electronAPI: ElectronAPI = {
   system: {
     platform: process.platform,
     version: ipcRenderer.sendSync('app:getVersion'),
+    selectFolder: () => ipcRenderer.invoke('system:selectFolder'),
   },
 
   // Generic invoke method

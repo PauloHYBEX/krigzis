@@ -49,8 +49,15 @@ export interface UserSettings {
   largeFontMode: boolean;
   showTaskCounters: boolean;
 
+  // Appearance
+  interfaceDensity?: 'compact' | 'normal' | 'comfortable';
+  reduceAnimations?: boolean;
+  cardOpacity?: number;
+
   // Data Management
   dataPath?: string;
+  storageType: 'localStorage' | 'database';
+  databaseLocation?: string;
 
   // AI Behavior Settings
   aiCanCreateTasks: boolean;
@@ -148,7 +155,7 @@ const DEFAULT_QUICK_ACTIONS: QuickAction[] = [
 ];
 
 const DEFAULT_SETTINGS: UserSettings = {
-  userName: 'Paulo',
+  userName: '',
   language: 'pt-BR',
   theme: 'dark',
   startWithOS: false,
@@ -166,6 +173,14 @@ const DEFAULT_SETTINGS: UserSettings = {
   highContrastMode: false,
   largeFontMode: false,
   showTaskCounters: true,
+  
+  // Data Management
+  storageType: 'localStorage',
+  
+  // Appearance Settings
+  interfaceDensity: 'normal',
+  reduceAnimations: false,
+  cardOpacity: 95,
   
   // AI Behavior Settings
   aiCanCreateTasks: true,
@@ -217,6 +232,7 @@ interface SettingsContextType {
   updateSettings: (newSettings: Partial<UserSettings>) => void;
   resetSettings: () => void;
   clearAllData: () => Promise<boolean>;
+  prepareForDistribution: () => boolean;
   updateSessionInfo: (newSessionInfo: Partial<SessionInfo>) => void;
   exportSettings: () => string;
   importSettings: (jsonData: string) => boolean;
@@ -398,6 +414,39 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
+  // Função para preparar distribuição (zerar dados do usuário)
+  const prepareForDistribution = (): boolean => {
+    try {
+      // Lista de chaves que devem ser mantidas na distribuição
+      const systemKeys = ['krigzis-system-info'];
+      
+      // Limpar todos os dados do usuário, mantendo apenas configurações do sistema
+      const allKeys = Object.keys(localStorage);
+      allKeys.forEach(key => {
+        if (key.startsWith('krigzis-') && !systemKeys.includes(key)) {
+          localStorage.removeItem(key);
+        }
+      });
+
+      // Resetar configurações para padrão
+      const cleanSettings: UserSettings = {
+        ...DEFAULT_SETTINGS,
+        userName: '', // Usuário define seu nome
+        storageType: 'localStorage' as const, // Padrão para novos usuários
+        dataPath: undefined, // Usuário escolhe local
+        databaseLocation: undefined
+      };
+
+      setSettings(cleanSettings);
+      localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(cleanSettings));
+
+      return true;
+    } catch (error) {
+      console.error('Error preparing for distribution:', error);
+      return false;
+    }
+  };
+
   const updateSessionInfo = (newSessionInfo: Partial<SessionInfo>) => {
     const updatedSessionInfo = { ...sessionInfo, ...newSessionInfo };
     setSessionInfo(updatedSessionInfo);
@@ -536,6 +585,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     updateSettings,
     resetSettings,
     clearAllData,
+    prepareForDistribution,
     updateSessionInfo,
     exportSettings,
     importSettings,

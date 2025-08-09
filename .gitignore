@@ -67,3 +67,7 @@ coverage/
 
 # Electron Builder
 app-builds/
+
+# Distribuições locais não versionadas
+Krigzis-Portable/
+Krigzis-EXE-Final/

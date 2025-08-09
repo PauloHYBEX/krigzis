@@ -6,6 +6,7 @@ export interface Note {
   tags?: string[];
   linkedTaskIds?: number[]; // Mudança: array de IDs de tarefas
   attachments?: NoteAttachment[];
+  attachedImages?: string[]; // Array de imagens em base64
   created_at: string;
   updated_at: string;
   workspace_id?: number;
@@ -32,6 +33,7 @@ export interface CreateNoteData {
   tags?: string[];
   linkedTaskIds?: number[]; // Mudança: array de IDs de tarefas
   color?: string;
+  attachedImages?: string[]; // Array de imagens em base64
 }
 
 export interface UpdateNoteData extends Partial<CreateNoteData> {

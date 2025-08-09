@@ -156,7 +156,128 @@ export const Dashboard: React.FC<DashboardProps> = ({
     console.log('========================');
   }
 
+  // Funções para gerar dicas e insights
+  const getProductivityTip = () => {
+    const tips = [
+      "Use a técnica Pomodoro: 25 minutos focado, 5 minutos de pausa.",
+      "Organize suas tarefas por prioridade no início do dia.",
+      "Elimine distrações: desligue notificações desnecessárias.",
+      "Faça uma pausa de 2 minutos a cada hora para descansar os olhos.",
+      "Mantenha sua área de trabalho organizada e limpa.",
+      "Defina metas específicas e mensuráveis para cada tarefa.",
+      "Use listas de verificação para não esquecer nada importante.",
+      "Reserve tempo para planejar o próximo dia antes de dormir."
+    ];
+    
+    const today = new Date();
+    const dayIndex = today.getDate() % tips.length;
+    return tips[dayIndex];
+  };
+
+  const getProgressInsight = () => {
+    const totalTasks = (stats?.backlog || 0) + (stats?.esta_semana || 0) + (stats?.hoje || 0) + (stats?.concluido || 0);
+    const completedTasks = stats?.concluido || 0;
+    const todayTasks = stats?.hoje || 0;
+    
+    if (totalTasks === 0) {
+      return "Comece criando suas primeiras tarefas para acompanhar seu progresso!";
+    }
+    
+    const completionRate = Math.round((completedTasks / totalTasks) * 100);
+    
+    if (completionRate >= 80) {
+      return `Excelente! Você já concluiu ${completionRate}% das suas tarefas. Continue assim!`;
+    } else if (completionRate >= 50) {
+      return `Bom trabalho! ${completionRate}% concluído. Você tem ${todayTasks} tarefas para hoje.`;
+    } else if (completionRate >= 25) {
+      return `Você está no caminho certo com ${completionRate}% concluído. Foque nas tarefas de hoje!`;
+    } else {
+      return `Comece pequeno: você tem ${todayTasks} tarefas para hoje. Uma de cada vez!`;
+    }
+  };
+
+  const getAISuggestion = () => {
+    const suggestions = [
+      "Que tal agrupar tarefas similares para fazer em sequência?",
+      "Considere dividir tarefas grandes em subtarefas menores.",
+      "Suas tarefas de maior prioridade merecem sua energia matinal.",
+      "Revise suas metas semanais e ajuste suas prioridades.",
+      "Um ambiente organizado aumenta sua produtividade em 23%.",
+      "Considere usar blocos de tempo específicos para cada tipo de tarefa."
+    ];
+    
+    const randomIndex = Math.floor(Math.random() * suggestions.length);
+    return suggestions[randomIndex];
+  };
+
   // Escutar mudanças nas categorias - optimized
+  useEffect(() => {
+    // Export handler
+    const handleExport = async () => {
+      try {
+        const json = await (window as any).electronAPI?.database?.exportData?.();
+        if (!json) return;
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `krigzis-backup-${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error('Export failed:', err);
+      }
+    };
+
+    // Import handler
+    const handleImport = async () => {
+      try {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json';
+        input.onchange = async () => {
+          const file = input.files?.[0];
+          if (!file) return;
+          const content = await file.text();
+          const res = await (window as any).electronAPI?.database?.importData?.(content);
+          if (res?.success !== false) {
+            // Forçar recarregar dados em memória e UI
+            await (window as any).electronAPI?.tasks?.getAll?.();
+            window.dispatchEvent(new Event('tasksUpdated'));
+            window.dispatchEvent(new Event('categoriesUpdated'));
+            // Recarregar a página para garantir estado consistente
+            setTimeout(() => window.location.reload(), 200);
+          } else {
+            console.error('Import failed:', res?.error);
+          }
+        };
+        input.click();
+      } catch (err) {
+        console.error('Import failed:', err);
+      }
+    };
+
+    const handleClear = async () => {
+      try {
+        await (window as any).electronAPI?.tasks?.clearAll?.();
+        window.dispatchEvent(new Event('tasksUpdated'));
+        window.dispatchEvent(new Event('categoriesUpdated'));
+      } catch (err) {
+        console.error('Clear failed:', err);
+      }
+    };
+
+    window.addEventListener('exportData', handleExport);
+    window.addEventListener('importData', handleImport);
+    window.addEventListener('clearAllData', handleClear);
+    return () => {
+      window.removeEventListener('exportData', handleExport);
+      window.removeEventListener('importData', handleImport);
+      window.removeEventListener('clearAllData', handleClear);
+    };
+  }, [reloadCategories]);
+
+  // Efeito separado para listeners de categorias/tarefas
   useEffect(() => {
     const handleCategoriesUpdate = () => {
       if (process.env.NODE_ENV === 'development') {
@@ -340,9 +461,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const customCards = categories
     .filter(cat => !cat.isSystem)
     .sort((a, b) => (a.order || 0) - (b.order || 0))
-    .map(category => {
-      console.log('🔍 Dashboard: Processando categoria customizada:', category);
-      return {
+    .map(category => ({
       key: `category_${category.id}`,
       categoryId: category.id,
       title: category.name,
@@ -351,10 +470,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       icon: category.icon || 'Folder',
       accentColor: category.color,
       isSystem: false
-      };
-    });
-    
-    console.log('🔍 Dashboard: Categorias customizadas encontradas:', customCards.length);
+    }));
     displayCards = [...systemCards, ...customCards];
   } else {
     // Fallback: categorias padrão
@@ -641,14 +757,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <header style={{ marginBottom: 'var(--space-4)' }}>
         <div className="flex flex-between" style={{ alignItems: 'flex-start' }}>
           <div>
-            <h1 className="gradient-text" style={{ 
-              fontSize: 'var(--font-size-3xl)',
-              fontWeight: 'var(--font-weight-bold)',
-              marginBottom: 'var(--space-1)',
-              lineHeight: 'var(--line-height-tight)'
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--space-3)',
+              marginBottom: 'var(--space-1)'
             }}>
-              {getGreetingText()}
-            </h1>
+              <Home size={28} style={{ color: 'var(--color-primary-teal)' }} />
+              <h1 className="gradient-text" style={{ 
+                fontSize: 'var(--font-size-3xl)',
+                fontWeight: 'var(--font-weight-bold)',
+                margin: 0,
+                lineHeight: 'var(--line-height-tight)'
+              }}>
+                {getGreetingText()}
+              </h1>
+            </div>
             <p style={{
               fontSize: 'var(--font-size-base)',
               color: isDark ? 'var(--color-text-secondary)' : '#666666',
@@ -902,6 +1026,173 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </section>
 
+      {/* Seção de Dicas de Produtividade */}
+      {(settings.showProductivityTips || settings.showProgressInsights) && (
+        <section style={{ marginTop: '32px' }}>
+          <h2 style={{
+            fontSize: 'var(--font-size-base)',
+            fontWeight: 'var(--font-weight-semibold)',
+            color: 'var(--color-text-primary)',
+            marginBottom: 'var(--space-3)',
+            margin: '0 0 var(--space-3) 0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <Brain size={18} color="var(--color-primary-teal)" />
+            Insights de Produtividade
+          </h2>
+          
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '16px'
+          }}>
+            
+            {/* Dicas de Produtividade */}
+            {settings.showProductivityTips && (
+              <div style={{
+                backgroundColor: 'var(--color-bg-secondary)',
+                border: '1px solid var(--color-border-primary)',
+                borderRadius: '12px',
+                padding: '16px',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '4px',
+                  height: '100%',
+                  background: 'linear-gradient(135deg, var(--color-primary-teal), var(--color-accent-purple))'
+                }} />
+                
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginBottom: '12px'
+                }}>
+                  <Target size={16} color="var(--color-primary-teal)" />
+                  <h3 style={{
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: 'var(--color-text-primary)',
+                    margin: 0
+                  }}>
+                    Dica do Dia
+                  </h3>
+                </div>
+                
+                <p style={{
+                  fontSize: '13px',
+                  color: 'var(--color-text-secondary)',
+                  lineHeight: '1.5',
+                  margin: 0
+                }}>
+                  {getProductivityTip()}
+                </p>
+              </div>
+            )}
+
+            {/* Insights de Progresso */}
+            {settings.showProgressInsights && (
+              <div style={{
+                backgroundColor: 'var(--color-bg-secondary)',
+                border: '1px solid var(--color-border-primary)',
+                borderRadius: '12px',
+                padding: '16px',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '4px',
+                  height: '100%',
+                  background: 'linear-gradient(135deg, var(--color-accent-orange), var(--color-accent-violet))'
+                }} />
+                
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginBottom: '12px'
+                }}>
+                  <BarChart2 size={16} color="var(--color-accent-orange)" />
+                  <h3 style={{
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: 'var(--color-text-primary)',
+                    margin: 0
+                  }}>
+                    Seu Progresso
+                  </h3>
+                </div>
+                
+                <p style={{
+                  fontSize: '13px',
+                  color: 'var(--color-text-secondary)',
+                  lineHeight: '1.5',
+                  margin: 0
+                }}>
+                  {getProgressInsight()}
+                </p>
+              </div>
+            )}
+
+            {/* Sugestão de IA (se configurada) */}
+            {aiConfig.selectedProvider !== 'local' && aiConfig.apiKey && settings.aiProactiveMode && (
+              <div style={{
+                backgroundColor: 'var(--color-bg-secondary)',
+                border: '1px solid var(--color-border-primary)',
+                borderRadius: '12px',
+                padding: '16px',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '4px',
+                  height: '100%',
+                  background: 'linear-gradient(135deg, var(--color-accent-violet), var(--color-primary-teal))'
+                }} />
+                
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginBottom: '12px'
+                }}>
+                  <Brain size={16} color="var(--color-accent-violet)" />
+                  <h3 style={{
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: 'var(--color-text-primary)',
+                    margin: 0
+                  }}>
+                    Sugestão IA
+                  </h3>
+                </div>
+                
+                <p style={{
+                  fontSize: '13px',
+                  color: 'var(--color-text-secondary)',
+                  lineHeight: '1.5',
+                  margin: 0
+                }}>
+                  {getAISuggestion()}
+                </p>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* Modal de Detalhes do Status */}
       {selectedStatus && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={closeTaskModal}>
@@ -919,7 +1210,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 </Button>
               </div>
             </div>
-            <div className="p-6 overflow-y-auto max-h-96">
+            <div className="p-6 task-card-container">
               {statusTasks.length === 0 ? (
                 <p className="text-gray-400 text-center py-8">
                   Nenhuma tarefa encontrada para este status.

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, Square, Coffee, TreePine, Settings as SettingsIcon, ChevronLeft } from 'lucide-react';
+import { Play, Pause, Square, Coffee, TreePine, Settings as SettingsIcon, ChevronLeft, Clock } from 'lucide-react';
 import { useTimer } from '../hooks/useTimer';
 import { useTheme } from '../hooks/useTheme';
 import { TimerSettings } from './TimerSettings';
@@ -117,6 +117,7 @@ export const Timer: React.FC<TimerProps> = ({ taskId, onBack }) => {
               color: 'var(--color-text-secondary)',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
+              marginRight: 'var(--space-4)',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = 'var(--color-primary-teal)';
@@ -134,17 +135,22 @@ export const Timer: React.FC<TimerProps> = ({ taskId, onBack }) => {
           </button>
         )}
 
-                     {/* Título centralizado - padrão das outras abas */}
-             <h1 className="gradient-text" style={{
-               fontSize: 'var(--font-size-3xl)', // Changed to match dashboard
-               fontWeight: 'var(--font-weight-bold)', // Changed to match dashboard
-               margin: 0,
-               textAlign: 'center',
-               flex: 1,
-               lineHeight: 'var(--line-height-tight)',
-             }}>
-               Timer
-             </h1>
+        {/* Título com ícone - padrão das outras abas */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          flex: 1
+        }}>
+          <Clock size={28} style={{ color: 'var(--color-primary-teal)' }} />
+          <h1 className="gradient-text" style={{
+            fontSize: '32px',
+            fontWeight: 600,
+            margin: 0,
+          }}>
+            Timer
+          </h1>
+        </div>
 
         {/* Settings button */}
         <button
@@ -176,27 +182,183 @@ export const Timer: React.FC<TimerProps> = ({ taskId, onBack }) => {
         </button>
       </div>
 
-      {/* Conteúdo principal centralizado */}
+      {/* Conteúdo principal em layout flexível */}
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
+        gap: '16px',
         flex: 1,
-        maxWidth: '400px',
+        maxWidth: '800px',
         width: '100%',
         margin: '0 auto',
-        gap: 'var(--space-6)',
       }}>
 
-        {/* Timer Type Selector */}
+        {/* Timer Principal - Centralizado */}
         <div style={{
           display: 'flex',
-          gap: '6px',
-          marginBottom: '24px',
-          justifyContent: 'center',
-          flexWrap: 'wrap',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '16px',
+          padding: '24px',
+          backgroundColor: 'var(--color-bg-card)',
+          borderRadius: '12px',
+          border: '1px solid var(--color-border-primary)',
         }}>
+          {/* Timer Display */}
+          <div style={{
+            fontSize: '48px',
+            fontWeight: 700,
+            color: getTimerTypeInfo(currentSession?.type || selectedType).color,
+            fontFamily: 'var(--font-mono)',
+            letterSpacing: '-1px',
+            textAlign: 'center',
+          }}>
+            {currentSession ? formatTime(currentSession.remainingTime) : formatTime(getDurationForType(selectedType))}
+          </div>
+
+          {/* Timer Type Badge */}
+          <div style={{
+            padding: '6px 16px',
+            backgroundColor: `${getTimerTypeInfo(currentSession?.type || selectedType).color}20`,
+            color: getTimerTypeInfo(currentSession?.type || selectedType).color,
+            borderRadius: '20px',
+            fontSize: '12px',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '1px',
+          }}>
+            {getTimerTypeInfo(currentSession?.type || selectedType).label}
+          </div>
+
+          {/* Controls */}
+          <div style={{
+            display: 'flex',
+            gap: '12px',
+            alignItems: 'center',
+          }}>
+            {!currentSession ? (
+              <button
+                onClick={() => startSession(selectedType)}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: 'var(--color-primary-teal)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary-teal-dark)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary-teal)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                Iniciar
+              </button>
+            ) : currentSession.status === 'running' ? (
+              <>
+                <button
+                  onClick={pauseSession}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: 'var(--color-warning)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Pausar
+                </button>
+                <button
+                  onClick={stopSession}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: 'var(--color-danger)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Parar
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={resumeSession}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: 'var(--color-success)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Continuar
+                </button>
+                <button
+                  onClick={stopSession}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: 'var(--color-danger)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Parar
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Seção inferior - Seletores e Estatísticas */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '16px',
+        }}>
+
+        {/* Seletores de Tipo */}
+        <div style={{
+          padding: '16px',
+          backgroundColor: 'var(--color-bg-card)',
+          borderRadius: '8px',
+          border: '1px solid var(--color-border-primary)',
+        }}>
+          <h3 style={{
+            fontSize: '16px',
+            fontWeight: 600,
+            color: 'var(--color-text-primary)',
+            marginBottom: '16px',
+            margin: '0 0 16px 0',
+          }}>
+            Modo de Trabalho
+          </h3>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+          }}>
           {(['work', 'short-break', 'long-break'] as TimerType[]).map((type) => {
             const typeInfo = getTimerTypeInfo(type);
             const isActive = (currentSession?.type || selectedType) === type;
@@ -208,291 +370,162 @@ export const Timer: React.FC<TimerProps> = ({ taskId, onBack }) => {
                 onClick={() => handleTypeChange(type)}
                 disabled={isDisabled && currentSession?.type !== type ? true : undefined}
                 style={{
-                  padding: '8px 12px',
-                  borderRadius: '10px',
-                  border: isActive ? `2px solid ${typeInfo.color}` : `2px solid ${isDark ? '#2A2A2A' : '#E0E0E0'}`,
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  border: isActive ? `2px solid ${typeInfo.color}` : `1px solid ${isDark ? '#2A2A2A' : '#E0E0E0'}`,
                   backgroundColor: isActive ? `${typeInfo.color}20` : isDark ? '#141414' : '#F5F5F5',
                   color: isActive ? typeInfo.color : isDark ? '#A0A0A0' : '#666666',
                   cursor: isDisabled && currentSession?.type !== type ? 'not-allowed' : 'pointer',
-                  fontSize: '12px',
+                  fontSize: '14px',
                   fontWeight: 500,
                   transition: 'all 0.2s ease',
                   opacity: isDisabled && currentSession?.type !== type ? 0.5 : 1,
-                  minWidth: '90px',
+                  width: '100%',
+                  textAlign: 'left',
                 }}
                 onMouseEnter={(e) => {
                   if (!isDisabled || currentSession?.type === type) {
                     e.currentTarget.style.borderColor = typeInfo.color;
                     e.currentTarget.style.color = typeInfo.color;
+                    e.currentTarget.style.backgroundColor = `${typeInfo.color}10`;
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive) {
                     e.currentTarget.style.borderColor = isDark ? '#2A2A2A' : '#E0E0E0';
                     e.currentTarget.style.color = isDark ? '#A0A0A0' : '#666666';
+                    e.currentTarget.style.backgroundColor = isDark ? '#141414' : '#F5F5F5';
                   }
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  {React.cloneElement(typeInfo.icon, { size: 14 })}
-                  <span>{typeInfo.label}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {React.cloneElement(typeInfo.icon, { size: 16 })}
+                  <div>
+                    <div style={{ fontWeight: 600 }}>{typeInfo.label}</div>
+                    <div style={{ 
+                      fontSize: '12px', 
+                      opacity: 0.7, 
+                      marginTop: '2px' 
+                    }}>
+                      {formatDuration(getDurationForType(type))}
+                    </div>
+                  </div>
                 </div>
               </button>
             );
           })}
+          </div>
         </div>
 
-        {/* Timer Display */}
+        {/* Estatísticas de Hoje */}
         <div style={{
-          marginBottom: '32px',
-          position: 'relative',
+          padding: '16px',
+          backgroundColor: 'var(--color-bg-card)',
+          borderRadius: '8px',
+          border: '1px solid var(--color-border-primary)',
         }}>
-          {/* Progress Ring */}
+          <h3 style={{
+            fontSize: '16px',
+            fontWeight: 600,
+            color: 'var(--color-text-primary)',
+            marginBottom: '12px',
+            margin: '0 0 12px 0',
+          }}>
+            Estatísticas de Hoje
+          </h3>
           <div style={{
-            width: '200px',
-            height: '200px',
-            margin: '0 auto 16px auto',
-            position: 'relative',
-            borderRadius: '50%',
-            background: `conic-gradient(${currentTypeInfo.color} ${progress}%, ${isDark ? '#2A2A2A' : '#E0E0E0'} 0%)`,
-            padding: '4px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
           }}>
             <div style={{
-              width: '100%',
-              height: '100%',
-              borderRadius: '50%',
-              backgroundColor: isDark ? '#0A0A0A' : '#FFFFFF',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'column',
+              padding: '10px 12px',
+              backgroundColor: isDark ? '#141414' : '#F5F5F5',
+              borderRadius: '6px',
+              border: `1px solid ${isDark ? '#2A2A2A' : '#E0E0E0'}`,
             }}>
               <div style={{
-                fontSize: '32px',
-                fontWeight: 'bold',
-                color: currentTypeInfo.color,
-                marginBottom: '6px',
-                fontFamily: 'monospace',
-              }}>
-                {currentSession ? formatTime(currentSession.remainingTime) : formatTime(getDurationForType(selectedType))}
-              </div>
-              <div style={{
-                fontSize: '14px',
+                fontSize: '11px',
                 color: isDark ? '#A0A0A0' : '#666666',
-                textAlign: 'center',
+                marginBottom: '2px',
               }}>
-                {currentSession ? (
-                  <div>
-                    <div>{currentTypeInfo.label}</div>
-                    <div style={{ fontSize: '11px', marginTop: '2px' }}>
-                      {currentSession.status === 'running' ? 'Em andamento' : 
-                       currentSession.status === 'paused' ? 'Pausado' : 'Concluído'}
-                    </div>
-                  </div>
-                ) : (
-                  <div>
-                    <div>{currentTypeInfo.label}</div>
-                    <div style={{ fontSize: '11px', marginTop: '2px' }}>
-                      Pronto para começar
-                    </div>
-                  </div>
-                )}
+                Sessões Concluídas
+              </div>
+              <div style={{
+                fontSize: '16px',
+                fontWeight: 600,
+                color: 'var(--color-primary-teal)',
+              }}>
+                {stats.completedSessions}
+              </div>
+            </div>
+            <div style={{
+              padding: '10px 12px',
+              backgroundColor: isDark ? '#141414' : '#F5F5F5',
+              borderRadius: '6px',
+              border: `1px solid ${isDark ? '#2A2A2A' : '#E0E0E0'}`,
+            }}>
+              <div style={{
+                fontSize: '11px',
+                color: isDark ? '#A0A0A0' : '#666666',
+                marginBottom: '2px',
+              }}>
+                Tempo Total
+              </div>
+              <div style={{
+                fontSize: '16px',
+                fontWeight: 600,
+                color: 'var(--color-accent-orange)',
+              }}>
+                {formatDuration(stats.totalFocusTime)}
               </div>
             </div>
           </div>
-
-          {/* Current Type Info */}
-          <div style={{
-            textAlign: 'center',
-            marginBottom: '16px',
-          }}>
-            <div style={{
-              fontSize: '20px',
-              marginBottom: '6px',
-            }}>
-              {currentTypeInfo.icon}
-            </div>
-            <div style={{
-              fontSize: '13px',
-              color: isDark ? '#A0A0A0' : '#666666',
-            }}>
-              {currentTypeInfo.description}
-            </div>
-          </div>
         </div>
 
-        {/* Control Buttons */}
-        <div style={{
-          display: 'flex',
-          gap: '10px',
-          justifyContent: 'center',
-          marginBottom: '24px',
-        }}>
-          <button
-            onClick={handleStart}
-            style={{
-              padding: '12px 24px',
-              borderRadius: '10px',
-              border: 'none',
-              backgroundColor: currentTypeInfo.color,
-              color: '#FFFFFF',
-              fontSize: '14px',
+        </div>
+
+        {/* Sessão Atual */}
+        {currentSession && (
+          <div style={{
+            padding: '24px',
+            backgroundColor: 'var(--color-bg-card)',
+            borderRadius: '12px',
+            border: '1px solid var(--color-border-primary)',
+            textAlign: 'center',
+          }}>
+            <h3 style={{
+              fontSize: '16px',
               fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              minWidth: '100px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-1px)';
-              e.currentTarget.style.boxShadow = `0 6px 16px ${currentTypeInfo.color}40`;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          >
-            {currentSession ? (
-              currentSession.status === 'paused' ? (
-                <>
-                  <Play size={14} strokeWidth={1.7} />
-                  Retomar
-                </>
-              ) : currentSession.status === 'running' ? (
-                <>
-                  <Pause size={14} strokeWidth={1.7} />
-                  Pausar
-                </>
+              color: 'var(--color-text-primary)',
+              marginBottom: '12px',
+              margin: '0 0 12px 0',
+            }}>
+              Sessão Atual
+            </h3>
+            <div style={{
+              fontSize: '14px',
+              color: isDark ? '#A0A0A0' : '#666666',
+            }}>
+              {currentSession ? (
+                <div>
+                  <div>{currentTypeInfo.label}</div>
+                  <div style={{ fontSize: '13px', marginTop: '4px', opacity: 0.8 }}>
+                    Iniciado às {new Date().toLocaleTimeString()}
+                  </div>
+                  <div style={{ fontSize: '13px', marginTop: '4px', opacity: 0.8 }}>
+                    {currentSession.status === 'running' ? 'Em andamento' : 
+                     currentSession.status === 'paused' ? 'Pausado' : 'Concluído'}
+                  </div>
+                </div>
               ) : (
-                <>
-                  <Play size={14} strokeWidth={1.7} />
-                  Iniciar
-                </>
-              )
-            ) : (
-              <>
-                <Play size={14} strokeWidth={1.7} />
-                Iniciar
-              </>
-            )}
-          </button>
-
-          {currentSession && (
-            <button
-              onClick={handleStop}
-              style={{
-                padding: '12px 24px',
-                borderRadius: '10px',
-                border: `2px solid ${isDark ? '#2A2A2A' : '#E0E0E0'}`,
-                backgroundColor: 'transparent',
-                color: isDark ? '#FFFFFF' : '#1A1A1A',
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                minWidth: '100px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#FF4444';
-                e.currentTarget.style.color = '#FF4444';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = isDark ? '#2A2A2A' : '#E0E0E0';
-                e.currentTarget.style.color = isDark ? '#FFFFFF' : '#1A1A1A';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              <Square size={14} strokeWidth={1.7} />
-              Parar
-            </button>
-          )}
-        </div>
-
-        {/* Stats */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '8px',
-          width: '100%',
-          maxWidth: '300px',
-        }}>
-          <div style={{
-            padding: '12px 8px',
-            borderRadius: '10px',
-            backgroundColor: isDark ? '#141414' : '#F5F5F5',
-            border: `1px solid ${isDark ? '#2A2A2A' : '#E0E0E0'}`,
-            textAlign: 'center',
-          }}>
-            <div style={{
-              fontSize: '18px',
-              fontWeight: 'bold',
-              color: '#FF6B6B',
-              marginBottom: '2px',
-            }}>
-              {stats.completedSessions}
-            </div>
-            <div style={{
-              fontSize: '11px',
-              color: isDark ? '#A0A0A0' : '#666666',
-            }}>
-              Sessões
+                <div>
+                  Nenhuma sessão ativa
+                </div>
+              )}
             </div>
           </div>
-
-          <div style={{
-            padding: '12px 8px',
-            borderRadius: '10px',
-            backgroundColor: isDark ? '#141414' : '#F5F5F5',
-            border: `1px solid ${isDark ? '#2A2A2A' : '#E0E0E0'}`,
-            textAlign: 'center',
-          }}>
-            <div style={{
-              fontSize: '18px',
-              fontWeight: 'bold',
-              color: '#4ECDC4',
-              marginBottom: '2px',
-            }}>
-              {formatDuration(stats.totalFocusTime)}
-            </div>
-            <div style={{
-              fontSize: '11px',
-              color: isDark ? '#A0A0A0' : '#666666',
-            }}>
-              Tempo Total
-            </div>
-          </div>
-
-          <div style={{
-            padding: '12px 8px',
-            borderRadius: '10px',
-            backgroundColor: isDark ? '#141414' : '#F5F5F5',
-            border: `1px solid ${isDark ? '#2A2A2A' : '#E0E0E0'}`,
-            textAlign: 'center',
-          }}>
-            <div style={{
-              fontSize: '18px',
-              fontWeight: 'bold',
-              color: '#45B7D1',
-              marginBottom: '2px',
-            }}>
-              {stats.currentStreak}
-            </div>
-            <div style={{
-              fontSize: '11px',
-              color: isDark ? '#A0A0A0' : '#666666',
-            }}>
-              Sequência
-            </div>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Settings Modal */}

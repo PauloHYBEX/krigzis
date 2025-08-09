@@ -9,7 +9,6 @@ import { Badge } from './ui/Badge';
 import { Task } from '../../shared/types/task';
 import { 
   Calendar, 
-  Clock, 
   Tag, 
   X, 
   Save, 
@@ -43,8 +42,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('low');
-  const [status, setStatus] = useState<'backlog' | 'esta_semana' | 'hoje' | 'concluido'>('backlog');
-  const [categoryId, setCategoryId] = useState<number | undefined>();
+  const [categoryId, setCategoryId] = useState<number>(1); // Default to Backlog
   const [linkedNoteId, setLinkedNoteId] = useState<number | undefined>();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
@@ -67,15 +65,20 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         setTitle(editingTask.title);
         setDescription(editingTask.description || '');
         setPriority(editingTask.priority || 'low');
-        setStatus(editingTask.status);
-        setCategoryId(editingTask.category_id);
+        // Map status to categoryId for backward compatibility
+        const statusToCategoryMap: { [key: string]: number } = {
+          'backlog': 1,
+          'esta_semana': 2, 
+          'hoje': 3,
+          'concluido': 4
+        };
+        setCategoryId(editingTask.category_id || statusToCategoryMap[editingTask.status] || 1);
         setLinkedNoteId(editingTask.linkedNoteId);
       } else {
         setTitle('');
         setDescription('');
         setPriority('low');
-        setStatus('backlog');
-        setCategoryId(undefined);
+        setCategoryId(1); // Default to Backlog
         setLinkedNoteId(undefined);
       }
       setCustomCategoryName('');
@@ -90,6 +93,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   useEffect(() => {
     console.log('📋 TaskModal: Categories updated:', categories.length, categories.map(c => c.name));
     console.log('📋 TaskModal: Full categories object:', categories);
+    console.log('📋 TaskModal: Categories are system?', categories.map(c => ({ name: c.name, isSystem: c.isSystem })));
   }, [categories]);
 
   // Debug effect for when modal opens
@@ -112,7 +116,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
 
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
-    
+
     if (!title.trim()) {
       newErrors.title = 'Título é obrigatório';
     }
@@ -120,7 +124,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     if (showCustomCategory && !customCategoryName.trim()) {
       newErrors.customCategory = 'Nome da categoria é obrigatório';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -142,18 +146,28 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         };
         // Here you would create the category and get its ID
         // finalCategoryId = await createCategory(newCategory);
-      }
+    }
 
-      const taskData = {
+    // Map categoryId to status for system categories
+    const categoryToStatusMap: { [key: number]: string } = {
+      1: 'backlog',
+      2: 'esta_semana',
+      3: 'hoje', 
+      4: 'concluido'
+    };
+    
+    const taskStatus = categoryToStatusMap[finalCategoryId] || 'backlog';
+
+    const taskData = {
         id: editingTask?.id || Date.now(),
-        title: title.trim(),
+      title: title.trim(),
         description: description.trim(),
         priority,
-        status,
+      status: taskStatus,
         category_id: finalCategoryId,
         created_at: editingTask?.created_at || new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        completed_at: status === 'concluido' ? new Date().toISOString() : null
+        completed_at: taskStatus === 'concluido' ? new Date().toISOString() : null
       };
 
       console.log('🔍 TaskModal: Dados da tarefa a ser criada:', taskData);
@@ -165,7 +179,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
           title: taskData.title,
           description: taskData.description,
           priority: taskData.priority,
-          status: taskData.status,
+          status: taskData.status as 'backlog' | 'esta_semana' | 'hoje' | 'concluido',
           category_id: taskData.category_id
         });
         savedTask = { ...editingTask, ...taskData } as Task;
@@ -194,7 +208,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         onSave(savedTask);
       }
 
-      onClose();
+    onClose();
     } catch (error) {
       console.error('Erro ao salvar tarefa:', error);
       setErrors({ general: 'Erro ao salvar tarefa' });
@@ -209,12 +223,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     { value: 'low', label: 'Baixa', color: '#4CAF50' }
   ];
 
-  const statusOptions = [
-    { value: 'backlog', label: 'Backlog', color: '#6B7280' },
-    { value: 'esta_semana', label: 'Esta Semana', color: '#3B82F6' },
-    { value: 'hoje', label: 'Hoje', color: '#F59E0B' },
-    { value: 'concluido', label: 'Concluído', color: '#10B981' }
-  ];
+
 
   if (!isOpen) return null;
 
@@ -298,48 +307,28 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               {notes.map(note => (
                 <option key={note.id} value={note.id}>
                   {note.title}
-                </option>
+                      </option>
               ))}
             </select>
           </div>
 
-          {/* Prioridade e Status */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <div>
-              <label className="form-label">
-                <AlertCircle size={16} />
-                Prioridade
-              </label>
-              <select
-                className="form-select"
-                value={priority}
-                onChange={(e) => setPriority(e.target.value as 'low' | 'medium' | 'high')}
-              >
-                {priorityOptions.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="form-label">
-                <Clock size={16} />
-                Status
-              </label>
-              <select
-                className="form-select"
-                value={status}
-                onChange={(e) => setStatus(e.target.value as any)}
-              >
-                {statusOptions.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Prioridade */}
+          <div>
+            <label className="form-label">
+              <AlertCircle size={16} />
+              Prioridade
+            </label>
+            <select
+              className="form-select"
+              value={priority}
+              onChange={(e) => setPriority(e.target.value as 'low' | 'medium' | 'high')}
+            >
+              {priorityOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Categoria */}
@@ -348,37 +337,50 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               <Tag size={16} />
               Categoria
             </label>
+            <p style={{ 
+              fontSize: '12px', 
+              color: 'var(--color-text-secondary)', 
+              marginBottom: '8px',
+              marginTop: '4px'
+            }}>
+              As categorias padrão (Backlog, Esta Semana, Hoje, Concluído) definem o status da tarefa
+            </p>
             
             <div className="flex-col gap-12">
               <select
                 className="form-select"
-                value={showCustomCategory ? 'custom' : (categoryId || '')}
+                value={showCustomCategory ? 'custom' : categoryId}
                 onChange={(e) => {
                   if (e.target.value === 'custom') {
                     setShowCustomCategory(true);
-                    setCategoryId(undefined);
+                    setCategoryId(1); // Default to Backlog when creating custom
                   } else {
                     setShowCustomCategory(false);
-                    setCategoryId(e.target.value ? Number(e.target.value) : undefined);
+                    setCategoryId(Number(e.target.value));
                   }
                 }}
               >
-                <option value="">Nenhuma categoria</option>
-                {categories.length > 0 ? (
-                  categories.map(category => (
-                    <option key={category.id} value={category.id}>
+                {/* System categories - ALWAYS show regardless of hook state */}
+                <option value="1">Backlog</option>
+                <option value="2">Esta Semana</option>
+                <option value="3">Hoje</option>
+                <option value="4">Concluído</option>
+                
+                {/* Custom categories from hook - only non-system ones */}
+                {categories && categories.length > 0 && categories
+                  .filter(cat => !cat.isSystem && cat.name && cat.id)
+                  .map(category => (
+                    <option key={`custom-${category.id}`} value={category.id}>
                       {category.name}
                     </option>
-                  ))
-                ) : (
-                  // Fallback categories if none are loaded
-                  <>
-                    <option value="1">Backlog</option>
-                    <option value="2">Esta Semana</option>
-                    <option value="3">Hoje</option>
-                    <option value="4">Concluído</option>
-                  </>
-                )}
+                  ))}
+                  
+                {/* Debug info */}
+                {(() => {
+                  console.log('🔍 TaskModal Render: Categories count:', categories?.length || 0);
+                  console.log('🔍 TaskModal Render: Categories data:', categories);
+                  return null;
+                })()}
                 <option value="custom">➕ Criar nova categoria</option>
               </select>
 
@@ -408,8 +410,8 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                         <label className="form-label">
                           <Palette size={16} />
                           Cor
-                        </label>
-                        <input
+            </label>
+            <input
                           type="color"
                           value={customCategoryColor}
                           onChange={(e) => setCustomCategoryColor(e.target.value)}
@@ -437,11 +439,11 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
+              </div>
+            )}
             </div>
           </div>
-        </div>
+          </div>
 
         {/* Footer */}
         <div className="flex-between gap-12" style={{ 
@@ -453,8 +455,8 @@ export const TaskModal: React.FC<TaskModalProps> = ({
             variant="ghost"
             onClick={onClose}
             disabled={isLoading}
-          >
-            Cancelar
+            >
+              Cancelar
           </Button>
           
           <Button
@@ -466,7 +468,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
             <Save size={16} />
             {isLoading ? 'Salvando...' : (editingTask ? 'Atualizar' : 'Criar Tarefa')}
           </Button>
-        </div>
+          </div>
       </div>
     </div>
   );

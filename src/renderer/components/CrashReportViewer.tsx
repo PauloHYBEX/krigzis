@@ -61,44 +61,16 @@ export const CrashReportViewer: React.FC<CrashReportViewerProps> = ({ isOpen, on
   const loadCrashReports = async () => {
     setIsLoading(true);
     try {
-      // Simular carregamento de crash reports (em produção, isso viria do main process)
-      const mockReports: CrashReport[] = [
-        {
-          id: 'crash-1234567890',
-          timestamp: new Date().toISOString(),
-          version: '1.0.0',
-          platform: 'win32',
-          arch: 'x64',
-          error: {
-            name: 'TypeError',
-            message: 'Cannot read property of undefined',
-            stack: 'at TaskList.render (TaskList.tsx:45)\nat ReactDOM.render (react-dom.js:123)'
-          },
-          context: {
-            memoryUsage: {
-              rss: 123456789,
-              heapTotal: 987654321,
-              heapUsed: 456789123,
-              external: 12345678,
-              arrayBuffers: 0
-            },
-            cpuUsage: {
-              user: 1234567,
-              system: 987654
-            },
-            uptime: 3600
-          },
-          userData: {
-            sessionId: 'session-123',
-            userId: 'user-456',
-            lastAction: 'task_creation'
-          }
-        }
-      ];
-      
-      setCrashReports(mockReports);
+      const electronAPI: any = (window as any).electronAPI;
+      if (electronAPI?.logging?.getCrashReports) {
+        const reports = await electronAPI.logging.getCrashReports({ limit: 50 });
+        setCrashReports(Array.isArray(reports) ? reports : []);
+      } else {
+        setCrashReports([]);
+      }
     } catch (error) {
       console.error('Erro ao carregar crash reports:', error);
+      setCrashReports([]);
     } finally {
       setIsLoading(false);
     }

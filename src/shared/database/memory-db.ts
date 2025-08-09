@@ -265,6 +265,7 @@ class MemoryDatabase {
       tags: noteData.tags || [],
       linkedTaskIds: noteData.linkedTaskIds || [], // Mudança: array
       attachments: [],
+      attachedImages: noteData.attachedImages || [], // Incluir imagens anexadas
       created_at: now,
       updated_at: now,
       workspace_id: 1,

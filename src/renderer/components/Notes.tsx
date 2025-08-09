@@ -7,7 +7,9 @@ import { Badge } from './ui/Badge';
 import { Input } from './ui/Input';
 import { NoteEditor } from './NoteEditor';
 import { LinkedTasksModal } from './LinkedTasksModal';
-import { StickyNote, Search, Grid3X3, List, Plus, Pin, Trash2, Link, ChevronLeft } from 'lucide-react';
+import { StickyNote, Search, Grid3X3, List, Plus, Pin, Trash2, Link, ChevronLeft, Eye } from 'lucide-react';
+import { NoteViewerModal } from './NoteViewerModal';
+import { ConfirmDeleteNoteModal } from './ConfirmDeleteNoteModal';
 
 interface NotesProps {
   onBack?: () => void;
@@ -30,6 +32,9 @@ export const Notes: React.FC<NotesProps> = ({ onBack }) => {
     noteTitle: '',
     linkedTaskIds: []
   });
+
+  const [viewer, setViewer] = useState<{ isOpen: boolean; note: Note | null }>({ isOpen: false, note: null });
+  const [confirmDelete, setConfirmDelete] = useState<{ isOpen: boolean; note: Note | null; taskTitles: string[] }>({ isOpen: false, note: null, taskTitles: [] });
 
   // Debug: Verificar se as variáveis CSS estão sendo aplicadas
   useEffect(() => {
@@ -122,9 +127,29 @@ export const Notes: React.FC<NotesProps> = ({ onBack }) => {
     }
   }, [selectedNote, createNote, updateNote, handleCloseEditor]);
 
-  const handleDeleteNote = async (noteId: number) => {
-    if (window.confirm('Tem certeza que deseja excluir esta nota?')) {
-      await deleteNote(noteId);
+  const handleDeleteNote = async (note: Note) => {
+    try {
+      const linkedIds = note.linkedTaskIds || [];
+      if (linkedIds.length > 0) {
+        try {
+          const allTasks = await (window as any).electronAPI?.database?.getAllTasks?.();
+          const linkedTitles: string[] = Array.isArray(allTasks)
+            ? allTasks
+                .filter((t: any) => linkedIds.includes(t.id))
+                .map((t: any) => String(t.title))
+            : [];
+          setConfirmDelete({ isOpen: true, note, taskTitles: linkedTitles });
+          return;
+        } catch (err) {
+          console.warn('Não foi possível carregar títulos das tarefas vinculadas:', err);
+          setConfirmDelete({ isOpen: true, note, taskTitles: [] });
+          return;
+        }
+      }
+      // Sem vínculos: excluir direto com modal simples
+      setConfirmDelete({ isOpen: true, note, taskTitles: [] });
+    } catch (error) {
+      console.error('Erro ao preparar exclusão:', error);
     }
   };
 
@@ -308,7 +333,7 @@ export const Notes: React.FC<NotesProps> = ({ onBack }) => {
             )}
           </div>
         ) : (
-          <div className="notes-list">
+          <div className="notes-list notes-list-container">
             {viewMode === 'grid' ? (
               <div className="notes-grid">
                 {filteredNotes.map((note) => (
@@ -327,19 +352,26 @@ export const Notes: React.FC<NotesProps> = ({ onBack }) => {
                         </h3>
                         
                         <div className="note-actions">
+                          <button
+                            className="note-view-button"
+                            title="Visualizar"
+                            onClick={(e) => { e.stopPropagation(); setViewer({ isOpen: true, note }); }}
+                          >
+                            <Eye size={22} />
+                          </button>
                           {note.is_pinned && (
                             <Pin size={12} className="pin-icon" />
                           )}
                           <Button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDeleteNote(note.id);
+                              handleDeleteNote(note);
                             }}
                             variant="ghost"
                             size="sm"
                             className="delete-button"
                           >
-                            <Trash2 size={12} />
+                            <Trash2 size={18} />
                           </Button>
                         </div>
                       </div>
@@ -450,19 +482,26 @@ export const Notes: React.FC<NotesProps> = ({ onBack }) => {
                           </div>
 
                           <div className="note-list-actions">
+                            <button
+                              className="note-view-button"
+                              title="Visualizar"
+                              onClick={(e) => { e.stopPropagation(); setViewer({ isOpen: true, note }); }}
+                            >
+                              <Eye size={22} />
+                            </button>
                             {note.is_pinned && (
                               <Pin size={14} className="pin-icon" />
                             )}
                             <Button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDeleteNote(note.id);
+                                handleDeleteNote(note);
                               }}
                               variant="ghost"
                               size="sm"
                               className="delete-button"
                             >
-                              <Trash2 size={14} />
+                              <Trash2 size={18} />
                             </Button>
                           </div>
                         </div>
@@ -483,6 +522,26 @@ export const Notes: React.FC<NotesProps> = ({ onBack }) => {
         noteId={linkedTasksModal.noteId}
         noteTitle={linkedTasksModal.noteTitle}
         linkedTaskIds={linkedTasksModal.linkedTaskIds}
+      />
+
+      {/* Note Viewer Modal */}
+      <NoteViewerModal
+        isOpen={viewer.isOpen}
+        note={viewer.note}
+        onClose={() => setViewer({ isOpen: false, note: null })}
+      />
+
+      <ConfirmDeleteNoteModal
+        isOpen={confirmDelete.isOpen}
+        noteTitle={confirmDelete.note?.title || ''}
+        linkedTaskTitles={confirmDelete.taskTitles}
+        onClose={() => setConfirmDelete({ isOpen: false, note: null, taskTitles: [] })}
+        onConfirm={async () => {
+          if (confirmDelete.note) {
+            await deleteNote(confirmDelete.note.id);
+          }
+          setConfirmDelete({ isOpen: false, note: null, taskTitles: [] });
+        }}
       />
     </div>
   );

@@ -42,6 +42,9 @@ export const useDatabase = (): UseDatabaseReturn => {
       setError(null);
       const allTasks = await databaseService.getAllTasks();
       setTasks(allTasks);
+      
+      // Disparar evento para notificar que as tarefas foram carregadas
+      window.dispatchEvent(new CustomEvent('tasksUpdated', { detail: { loaded: true } }));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar tarefas');
       console.error('Error in getAllTasks:', err);
@@ -80,6 +83,9 @@ export const useDatabase = (): UseDatabaseReturn => {
       // Atualizar lista local
       setTasks(prevTasks => [newTask, ...prevTasks]);
       
+      // Disparar evento para notificar outras partes do sistema
+      window.dispatchEvent(new CustomEvent('tasksUpdated', { detail: newTask }));
+      
       return newTask;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar tarefa');
@@ -102,6 +108,9 @@ export const useDatabase = (): UseDatabaseReturn => {
         prevTasks.map(task => task.id === id ? updatedTask : task)
       );
       
+      // Disparar evento para notificar outras partes do sistema
+      window.dispatchEvent(new CustomEvent('tasksUpdated', { detail: updatedTask }));
+      
       return updatedTask;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao atualizar tarefa');
@@ -122,6 +131,9 @@ export const useDatabase = (): UseDatabaseReturn => {
       if (success) {
         // Remover da lista local
         setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
+        
+        // Disparar evento para notificar outras partes do sistema
+        window.dispatchEvent(new CustomEvent('tasksUpdated', { detail: { deletedId: id } }));
       }
       
       return success;

@@ -14,6 +14,7 @@ import { Settings } from './components/Settings';
 import { Notes } from './components/Notes';
 import { NoteModal } from './components/NoteModal';
 import { useToast } from './components/Toast';
+import { useAppearance } from './hooks/useAppearance';
 import { Task, TaskStatus } from '../shared/types/task';
 import { NavigationState, Screen } from '../shared/types/navigation';
 import { Settings as SettingsIcon, Plus, TestTube } from 'lucide-react';
@@ -215,6 +216,9 @@ const App: React.FC<AppProps> = () => {
   const { theme, colors } = useTheme();
   const { t } = useI18n();
   const { settings, settingsVersion } = useSettings();
+  
+  // Aplicar configurações de aparência
+  useAppearance();
   
   // Hook para gerenciar tarefas via banco de dados
   const { 
@@ -487,27 +491,15 @@ const App: React.FC<AppProps> = () => {
     // Verifica se é uma categoria customizada
     if (navigation.selectedList.startsWith('category_')) {
       const categoryId = parseInt(navigation.selectedList.replace('category_', ''));
-      console.log('🔍 App: Filtrando tarefas para categoria customizada:', categoryId);
       
       // Use type assertion para resolver erro de TypeScript
       tasksList = tasks.filter((task: Task) => {
         const taskWithCategory = task as Task & { category_id?: number };
-        const matches = taskWithCategory.category_id === categoryId;
-        console.log(`🔍 App: Tarefa ${task.id} (${task.title}) - category_id: ${taskWithCategory.category_id}, matches: ${matches}`);
-        return matches;
+        return taskWithCategory.category_id === categoryId;
       });
-      
-      console.log('🔍 App: Tarefas encontradas para categoria:', tasksList.length);
     } else {
       // Se não for customizada, filtra por status
-      console.log('🔍 App: Filtrando tarefas por status:', navigation.selectedList);
-      tasksList = tasks.filter((task: Task) => {
-        const matches = task.status === navigation.selectedList;
-        console.log(`🔍 App: Tarefa ${task.id} (${task.title}) - status: ${task.status}, matches: ${matches}`);
-        return matches;
-      });
-      
-      console.log('🔍 App: Tarefas encontradas para status:', tasksList.length);
+      tasksList = tasks.filter((task: Task) => task.status === navigation.selectedList);
     }
     
     return (

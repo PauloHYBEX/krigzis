@@ -126,15 +126,17 @@ export const TaskList: React.FC<TaskListProps> = ({
             </button>
           )}
           
-          <div style={{ flex: 1 }}>
-            <h1 style={{
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            flex: 1
+          }}>
+            <CalendarDays size={28} style={{ color: 'var(--color-primary-teal)' }} />
+            <h1 className="gradient-text" style={{
               margin: 0,
               fontSize: '32px',
               fontWeight: 600,
-              background: 'linear-gradient(135deg, #00D4AA 0%, #7B3FF2 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
             }}>
               {title}
             </h1>

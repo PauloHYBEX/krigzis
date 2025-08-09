@@ -139,6 +139,7 @@ export const Reports: React.FC<ReportsProps> = ({ onClose, onBack }) => {
               color: 'var(--color-text-secondary)',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
+              marginRight: 'var(--space-4)',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = 'var(--color-primary-teal)';
@@ -156,22 +157,22 @@ export const Reports: React.FC<ReportsProps> = ({ onClose, onBack }) => {
           </button>
         )}
 
-        {/* Título centralizado - padrão das outras abas */}
-        <h1 className="gradient-text" style={{
-          fontSize: 'var(--font-size-3xl)', // Match dashboard
-          fontWeight: 'var(--font-weight-bold)', // Match dashboard
-          margin: 0,
-          textAlign: 'center',
-          flex: 1,
-          lineHeight: 'var(--line-height-tight)',
+        {/* Título com ícone - padrão das outras abas */}
+        <div style={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
           gap: '12px',
+          flex: 1
         }}>
-          <BarChart3 size={28} strokeWidth={1.7} /> {/* Slightly larger icon */}
-          Relatórios
-        </h1>
+          <BarChart3 size={28} style={{ color: 'var(--color-primary-teal)' }} />
+          <h1 className="gradient-text" style={{
+            fontSize: '32px',
+            fontWeight: 600,
+            margin: 0,
+          }}>
+            Relatórios
+          </h1>
+        </div>
 
         {/* Espaço para manter simetria */}
         <div style={{ width: '36px', height: '36px' }}></div>
@@ -179,10 +180,12 @@ export const Reports: React.FC<ReportsProps> = ({ onClose, onBack }) => {
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: '24px',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gap: '16px',
         maxWidth: '1200px',
         margin: '0 auto',
+        overflow: 'auto',
+        maxHeight: 'calc(100vh - 180px)',
       }}>
         {/* Overview Cards - Condicionadas por funcionalidades habilitadas */}
         <div style={{
@@ -268,8 +271,8 @@ export const Reports: React.FC<ReportsProps> = ({ onClose, onBack }) => {
         <div style={{
           backgroundColor: isDark ? '#141414' : '#F5F5F5',
           border: `1px solid ${isDark ? '#2A2A2A' : '#E0E0E0'}`,
-          borderRadius: '16px',
-          padding: '24px',
+          borderRadius: '12px',
+          padding: '16px',
         }}>
           <h3 style={{
             margin: '0 0 20px 0',
@@ -328,8 +331,8 @@ export const Reports: React.FC<ReportsProps> = ({ onClose, onBack }) => {
         <div style={{
           backgroundColor: isDark ? '#141414' : '#F5F5F5',
           border: `1px solid ${isDark ? '#2A2A2A' : '#E0E0E0'}`,
-          borderRadius: '16px',
-          padding: '24px',
+          borderRadius: '12px',
+          padding: '16px',
         }}>
           <h3 style={{
             margin: '0 0 20px 0',
@@ -374,8 +377,8 @@ export const Reports: React.FC<ReportsProps> = ({ onClose, onBack }) => {
           <div style={{
             backgroundColor: isDark ? '#141414' : '#F5F5F5',
             border: `1px solid ${isDark ? '#2A2A2A' : '#E0E0E0'}`,
-            borderRadius: '16px',
-            padding: '24px',
+            borderRadius: '12px',
+            padding: '16px',
           }}>
             <h3 style={{
               margin: '0 0 20px 0',
@@ -435,11 +438,11 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon, color, isDa
   <div style={{
     backgroundColor: isDark ? '#141414' : '#FFFFFF',
     border: `1px solid ${isDark ? '#2A2A2A' : '#E0E0E0'}`,
-    borderRadius: '12px',
-    padding: '20px',
+    borderRadius: '8px',
+    padding: '12px',
     display: 'flex',
     alignItems: 'center',
-    gap: '16px',
+    gap: '12px',
     transition: 'all 0.2s ease',
   }}>
     <div style={{
@@ -450,15 +453,15 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon, color, isDa
     </div>
     <div style={{ flex: 1 }}>
       <div style={{
-        fontSize: '24px',
+        fontSize: '18px',
         fontWeight: 700,
         color: isDark ? '#FFFFFF' : '#1A1A1A',
-        marginBottom: '4px',
+        marginBottom: '2px',
       }}>
         {value}
       </div>
       <div style={{
-        fontSize: '14px',
+        fontSize: '12px',
         color: isDark ? '#9CA3AF' : '#6B7280',
       }}>
         {title}

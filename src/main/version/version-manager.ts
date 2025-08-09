@@ -173,9 +173,8 @@ export class VersionManager {
    * Busca o manifest de atualizações do servidor
    */
   private async fetchUpdateManifest(): Promise<UpdateManifest> {
-    // Buscar manifest real do servidor de atualizações
-            // Repositório GitHub oficial do Krigzis
-        const updateServerUrl = 'https://api.github.com/repos/PauloHYBEX/krigzis/releases/latest';
+    // Repositório GitHub oficial do Krigzis
+    const updateServerUrl = 'https://api.github.com/repos/PauloHYBEX/krigzis/releases/latest';
     
     try {
       // Em ambiente de desenvolvimento, não verificar atualizações
@@ -184,7 +183,12 @@ export class VersionManager {
       }
 
       // Aqui você implementaria a busca real do GitHub Releases ou seu servidor
-      const response = await fetch(updateServerUrl);
+      const response = await fetch(updateServerUrl, {
+        headers: {
+          'Accept': 'application/vnd.github+json',
+          'User-Agent': 'Krigzis-Updater'
+        }
+      });
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -202,7 +206,7 @@ export class VersionManager {
             channel: 'stable',
             changelog: releaseData.body || 'Veja as novidades no GitHub',
             downloadUrl: releaseData.assets.find((asset: any) => 
-              asset.name.endsWith('.exe') || asset.name.endsWith('.dmg') || asset.name.endsWith('.AppImage')
+              asset.name.endsWith('.exe') || asset.name.endsWith('.msi') || asset.name.endsWith('.zip') || asset.name.endsWith('.dmg') || asset.name.endsWith('.AppImage')
             )?.browser_download_url,
             size: releaseData.assets[0]?.size || 0
           }

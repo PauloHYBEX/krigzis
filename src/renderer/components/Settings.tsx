@@ -406,6 +406,13 @@ const UpdateManagementPanel: React.FC<{ isDark: boolean }> = ({ isDark }) => {
   React.useEffect(() => {
     loadUpdateSettings();
     loadCurrentVersion();
+    const onDownloaded = (_e: any, payload: any) => {
+      console.log('Update downloaded:', payload);
+    };
+    (window as any).electronAPI?.on?.('update:downloaded', onDownloaded);
+    return () => {
+      (window as any).electronAPI?.off?.('update:downloaded', onDownloaded);
+    };
   }, []);
 
   const loadUpdateSettings = async () => {
@@ -436,8 +443,8 @@ const UpdateManagementPanel: React.FC<{ isDark: boolean }> = ({ isDark }) => {
     setIsChecking(true);
     try {
       const electronAPI = (window as any).electronAPI;
-      if (electronAPI?.version?.checkForUpdates) {
-        const result = await electronAPI.version.checkForUpdates(true);
+      if (electronAPI?.version?.forceCheck) {
+        const result = await electronAPI.version.forceCheck();
         setUpdateInfo(result);
         setLastCheck(new Date().toLocaleString());
       }
@@ -539,6 +546,30 @@ const UpdateManagementPanel: React.FC<{ isDark: boolean }> = ({ isDark }) => {
                 {updateInfo.releaseNotes}
               </div>
             )}
+            <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+              <Button onClick={async () => {
+                try {
+                  const electronAPI = (window as any).electronAPI;
+                  const res = await electronAPI?.update?.download?.(updateInfo);
+                  if (res?.success) {
+                    alert('Atualização baixada. A pasta será aberta para instalação.');
+                  } else {
+                    alert('Falha no download da atualização.');
+                  }
+                } catch (e) {
+                  console.error('Download update error', e);
+                  alert('Erro ao baixar atualização');
+                }
+              }}>Baixar Atualização</Button>
+              <Button onClick={() => {
+                const url = updateInfo?.latestVersion?.downloadUrl;
+                if (url) {
+                  window.open(url, '_blank');
+                }
+              }}>
+                Abrir link do instalador
+              </Button>
+            </div>
           </div>
         )}
 

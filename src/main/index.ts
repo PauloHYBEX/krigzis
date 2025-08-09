@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, ipcMain, globalShortcut, dialog, nativeImage } from 'electron';
+import { app, BrowserWindow, Menu, ipcMain, globalShortcut, dialog, nativeImage, shell } from 'electron';
 import * as path from 'path';
 import DatabaseManager from './database-manager';
 import { SecureLogger, logger, logInfo, logError } from './logging/logger';
@@ -939,6 +939,12 @@ class MainApplication {
             filePath: result.filePath,
             verified: result.verified
           });
+          // Abrir pasta de download para update manual
+          if (result.filePath) {
+            const folder = path.dirname(result.filePath);
+            shell.showItemInFolder(result.filePath);
+            this.mainWindow?.webContents.send('update:downloaded', { filePath: result.filePath, folder });
+          }
         }
         
         return result;

@@ -25,7 +25,7 @@ jobs:
       - name: Build application
         run: npm run build
       - name: Package dir (win-unpacked)
-        run: npx electron-builder --win --dir
+        run: npx -y electron-builder@23.6.0 --win --dir
         env:
           ELECTRON_BUILDER_DISABLE_CODE_SIGNING: true
           CSC_IDENTITY_AUTO_DISCOVERY: false
@@ -65,7 +65,7 @@ jobs:
       - name: Build application
         run: npm run build
       - name: Build portable EXE
-        run: npx electron-builder --win portable
+        run: npx -y electron-builder@23.6.0 --win portable
         env:
           ELECTRON_BUILDER_DISABLE_CODE_SIGNING: true
           CSC_IDENTITY_AUTO_DISCOVERY: false

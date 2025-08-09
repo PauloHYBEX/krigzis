@@ -8,7 +8,7 @@ on:
         required: true
 
 jobs:
-  win-zip:
+  windows-release:
     runs-on: windows-latest
     permissions:
       contents: write
@@ -24,18 +24,25 @@ jobs:
         run: npm ci
       - name: Build application
         run: npm run build
-      - name: Package dir (win-unpacked)
-        run: npx -y electron-builder@23.6.0 --win --dir
-        env:
-          ELECTRON_BUILDER_DISABLE_CODE_SIGNING: true
-          CSC_IDENTITY_AUTO_DISCOVERY: false
+      - name: Package app (electron-packager)
+        run: npx -y electron-packager@17.1.2 . Krigzis --platform=win32 --arch=x64 --out=release --overwrite --icon=assets/icon.ico --asar --app-version ${{ inputs.version }}
+      - name: Rename to win-unpacked
+        shell: pwsh
+        run: |
+          if (Test-Path 'release\win-unpacked') { Remove-Item -Recurse -Force 'release\win-unpacked' }
+          $src = Get-ChildItem -Directory release | Where-Object { $_.Name -like 'Krigzis-win32-*' } | Select-Object -First 1
+          Move-Item $src.FullName 'release\win-unpacked'
       - name: Create ZIP from win-unpacked
         shell: pwsh
         run: |
           $zip = "release/Krigzis-${{ inputs.version }}-win-unpacked.zip"
           if (Test-Path $zip) { Remove-Item -Force $zip }
           Compress-Archive -Path 'release/win-unpacked/*' -DestinationPath $zip -Force
-      - name: Publish ZIP to Release
+      - name: Install NSIS
+        run: choco install nsis -y
+      - name: Build NSIS installer
+        run: makensis /DAPP_VERSION=${{ inputs.version }} scripts/windows-installer.nsi
+      - name: Publish assets to Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ inputs.version }}
@@ -44,39 +51,6 @@ jobs:
           prerelease: false
           files: |
             release/Krigzis-${{ inputs.version }}-win-unpacked.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  win-portable:
-    runs-on: windows-latest
-    needs: win-zip
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: npm
-      - name: Install dependencies
-        run: npm ci
-      - name: Build application
-        run: npm run build
-      - name: Build portable EXE
-        run: npx -y electron-builder@23.6.0 --win portable
-        env:
-          ELECTRON_BUILDER_DISABLE_CODE_SIGNING: true
-          CSC_IDENTITY_AUTO_DISCOVERY: false
-      - name: Publish EXE to Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ inputs.version }}
-          name: v${{ inputs.version }}
-          draft: false
-          prerelease: false
-          files: |
-            release/*.exe
+            release/Krigzis-Setup-${{ inputs.version }}.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

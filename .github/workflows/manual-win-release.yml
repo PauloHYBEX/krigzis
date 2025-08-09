@@ -1,0 +1,82 @@
+name: Manual Windows Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version like 1.0.1
+        required: true
+
+jobs:
+  win-zip:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build application
+        run: npm run build
+      - name: Package dir (win-unpacked)
+        run: npx electron-builder --win --dir
+        env:
+          ELECTRON_BUILDER_DISABLE_CODE_SIGNING: true
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+      - name: Create ZIP from win-unpacked
+        shell: pwsh
+        run: |
+          $zip = "release/Krigzis-${{ inputs.version }}-win-unpacked.zip"
+          if (Test-Path $zip) { Remove-Item -Force $zip }
+          Compress-Archive -Path 'release/win-unpacked/*' -DestinationPath $zip -Force
+      - name: Publish ZIP to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ inputs.version }}
+          name: v${{ inputs.version }}
+          draft: false
+          prerelease: false
+          files: |
+            release/Krigzis-${{ inputs.version }}-win-unpacked.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  win-portable:
+    runs-on: windows-latest
+    needs: win-zip
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build application
+        run: npm run build
+      - name: Build portable EXE
+        run: npx electron-builder --win portable
+        env:
+          ELECTRON_BUILDER_DISABLE_CODE_SIGNING: true
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+      - name: Publish EXE to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ inputs.version }}
+          name: v${{ inputs.version }}
+          draft: false
+          prerelease: false
+          files: |
+            release/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -4,62 +4,49 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag para publicar (ex: v1.0.1)'
+        required: false
 
 jobs:
-  release:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
-
+  build-win:
+    runs-on: windows-latest
+    env:
+      ELECTRON_BUILDER_DISABLE_CODE_SIGNING: 'true'
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      NODE_OPTIONS: '--max_old_space_size=4096'
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
-          cache: npm
+          node-version: '20'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build application
+      - name: Generate icons
+        run: npm run icons
+
+      - name: Build
         run: npm run build
 
-      - name: Package application
-        run: npm run package
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Package Windows
+        run: npx electron-builder --win
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ runner.os }}-build
-          path: release/
-
-  create-release:
-    needs: release
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-
-      - name: Create Release
+      - name: Upload Release Assets
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ github.ref_name }}
           files: |
-            **/*.exe
-            **/*.dmg
-            **/*.AppImage
-            **/*.deb
-            **/*.rpm
+            release/**/*.exe
+            release/**/*.zip
+            release/**/Krigzis.exe
+            release/**/*.yml
+            release/**/*.blockmap
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

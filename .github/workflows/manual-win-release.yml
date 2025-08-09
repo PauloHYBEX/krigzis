@@ -38,10 +38,8 @@ jobs:
           $zip = "release/Krigzis-${{ inputs.version }}-win-unpacked.zip"
           if (Test-Path $zip) { Remove-Item -Force $zip }
           Compress-Archive -Path 'release/win-unpacked/*' -DestinationPath $zip -Force
-      - name: Install NSIS
-        run: choco install nsis -y
       - name: Build NSIS installer
-        run: makensis /DAPP_VERSION=${{ inputs.version }} scripts/windows-installer.nsi
+        run: makensis /DAPP_VERSION=${{ inputs.version }} /DICON_PATH=assets\icon.ico scripts/windows-installer.nsi
       - name: Publish assets to Release
         uses: softprops/action-gh-release@v1
         with:

@@ -38,9 +38,7 @@ jobs:
           $zip = "release/Krigzis-${{ inputs.version }}-win-unpacked.zip"
           if (Test-Path $zip) { Remove-Item -Force $zip }
           Compress-Archive -Path 'release/win-unpacked/*' -DestinationPath $zip -Force
-      - name: Build NSIS installer
-        run: makensis /DAPP_VERSION=${{ inputs.version }} /DICON_PATH=assets\icon.ico scripts/windows-installer.nsi
-      - name: Publish assets to Release
+      - name: Publish ZIP to Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ inputs.version }}
@@ -49,6 +47,27 @@ jobs:
           prerelease: false
           files: |
             release/Krigzis-${{ inputs.version }}-win-unpacked.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Resolve ICON_PATH
+        id: icon
+        shell: pwsh
+        run: |
+          $p = (Resolve-Path 'assets/icon.ico').Path
+          echo "ICON_PATH=$p" >> $env:GITHUB_ENV
+      - name: Build NSIS installer
+        continue-on-error: true
+        run: makensis /DAPP_VERSION=${{ inputs.version }} "/DICON_PATH=${{ env.ICON_PATH }}" scripts/windows-installer.nsi
+      - name: Publish EXE to Release (if present)
+        if: always()
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ inputs.version }}
+          name: v${{ inputs.version }}
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: false
+          files: |
             release/Krigzis-Setup-${{ inputs.version }}.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

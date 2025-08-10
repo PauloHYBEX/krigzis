@@ -1,8 +1,1 @@
-# Changelog
-
-## v1.0.1
-- Desativado DevTools/atalhos em produção
-- Crash Reports: render seguro e carregamento via IPC
-- Backup Completo via electronAPI.database.exportData (e import com reload)
-- Ícone do app corrigido, geração e configuração de build
-- Docs organizados em `docs/` e `_UNIFICADO.md`
+IyBDaGFuZ2Vsb2cKCgojIyB2MS4wLjEKLSBGaXg6IHNob3cgY29ycmVjdCBhcHAgdmVyc2lvbiBpbiBVSSB1c2luZyBFbGVjdHJvbiBhcHAuZ2V0VmVyc2lvbigpCi0gQnVpbGQ6IFdpbmRvd3MgaW5zdGFsbGVyIGdlbmVyYXRlZCB2aWEgZWxlY3Ryb24td2luc3RhbGxlcgotIFVwZGF0ZTogYXV0by11cGRhdGUgY2hlY2tzIEdpdEh1YiBsYXRlc3QgcmVsZWFzZQoKIyMgdjEuMC4wCi0gSW5pdGlhbCByZWxlYXNlCg==
